@@ -19,7 +19,7 @@ library(scico) # for color palette
 library(DT) # for interactive table 
 ```
 
-Welcome to your first lab!
+Welcome to your first lab! 🎉
 
 Let's start with an overlook of Rstudio.
 
@@ -104,7 +104,7 @@ print("three") # hashes do not cancel each other out # print(3)
 Now let's actually store something in `R`. This *something* will be called an **object**. Objects can contain information of different *data types*:
 
 |               |               |                                              |
-|-----------------|-----------------|--------------------------------------|
+|------------------|------------------|-------------------------------------|
 | **Numeric**   | Numbers       | `c(1, 2.4, 3.14, 4)`                         |
 | **Character** | Text          | `c("1", "blue", "fun", "monster")`           |
 | **Logical**   | True or false | `c(TRUE, FALSE, TRUE, FALSE)`                |
@@ -232,7 +232,7 @@ We also need to tell `R` where to find the file. Here let's distinguish between 
 C:/Users/viktoriia/path/on/my-laptop/project-folder/data/dataset.csv
 ```
 
-These will differ across computers, so using absolute paths should be a no-go. 
+These will differ across computers, so using absolute paths should be a no-go.
 
 A **relative path** needs to be combined with another path in order to access a file. If we are located in the project folder, to access the same file `dataset.csv` located in the `data` subfolder in the project folder, we will need to write this:
 
