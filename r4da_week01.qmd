@@ -1,0 +1,411 @@
+---
+title: "Lab 1: Meet the Toolkit"
+author: "Viktoriia Semenova"
+format: html
+editor: visual
+date: "February 14, 2023"
+---
+
+```{r setup, include=FALSE}
+# packages needed
+install.packages(c("tidyverse", "scico", "DT"),
+  repos = "http://cran.us.r-project.org"
+)
+
+# load the packages
+# only need to do this once in the
+library(tidyverse) 
+library(scico) # for color palette 
+library(DT) # for interactive table 
+```
+
+Welcome to your first lab!
+
+Let's start with an overlook of Rstudio.
+
+## The RStudio interface
+
+```{r, echo=FALSE, out.width="100%", fig.align = 'center'}
+knitr::include_graphics("images/rstudio.png")
+```
+
+By default, you will see these panes:
+
+-   **Editor**: This is were you usually code. You can open many different kinds of documents here. We will mostly be using Quarto documents (with a .`qmd` extension, Quarto Markdown), but you will see people use `.Rmd` (R Markdown) or `.R` (plain R code) files.
+-   **Console**: This is where the results appear once you execute your R-code. You can also directly type R-code into the console and execute it. This code does not get saved in your files, so better write in the *Editor*.
+-   **Environment, History, Connections, Git, Tutorial**: Two are relevant for us:
+    -   In the **Environment** you have an overview over all the objects currently loaded in your environment (like datasets for). You will learn more about objects later in the course.
+
+    -   In **Git** we will use version control and communicate to GitHub.
+-   **Files, Plots, Packages, Help, Viewer**: Plots and other things will appear here, don't worry too much about it for the moment.
+
+## This Document
+
+```{r, echo=FALSE, out.width="100%", fig.align = 'center'}
+knitr::include_graphics("images/quarto.png")
+```
+
+### YAML
+
+The top portion of this file (between the three dashed lines) is called **YAML** (/ˈjæməl/). It is a human-friendly data serialization standard for all programming languages. All you need to know is that this area is called the YAML (we will refer to it as such) and that it contains meta information about your document.
+
+### Code chunks
+
+With `qmd` files, you can write both text and code in the same file. You can insert new code chunks by clicking the green icon above or with a shortcuts: `Ctrl + Alt + I`/`Cmd + Option + I`. Here are some basic examples.
+
+### R as a Calculator
+
+```{r}
+5 + 7 ## R can be a calculator
+```
+
+```{r}
+2 - 3
+4 * 5
+2^2
+4 / 2
+2^(1 / 2)
+```
+
+If you place parentheses correctly, `R` incorporates the order of operations.
+
+```{r}
+((1 + 2) * 2)^2
+# (3 * 2)^2
+```
+
+You can also use other math *functions* you know from your calculator:
+
+```{r}
+# square root function (aka command)
+sqrt(x = 2) # x is an argument
+sqrt(2) # also works without writing "x" explicitly
+```
+
+### Comments
+
+The chunks above contain not just the code but also *comments*, so the text that is not executed (evaluated by `R`). You have two options for writing normal text in `qmd`/`rmd` files: as plain text (as this is written), and inside the chunk with comments (adding a hash symbol `#` so that everything on that line after the `#` gets commented out). Reserve comments for technical things and small notes, but if you need to write a sentence (like when answering questions in the problem sets for this class or actually writing a paper), use the Markdown part.
+
+| **Word of advice:** don't be lazy, **use comments** even if you are not planning to share the code, you will thank yourself later. With comments, other people can better understand your code (say when I am grading your work or when you are working together on a problem set). But also, you can remember what you were doing when you come back to your code after some time (e.g., to prepare the final project at the end of the semester).
+
+This is how you add a comment:
+
+```{r}
+# this is a comment
+## this is also a comment
+
+print(3) # code in this line runs
+# 1 + 1 code here does not run
+print("three") # hashes do not cancel each other out # print(3)
+```
+
+## Data Basics in R
+
+Now let's actually store something in `R`. This *something* will be called an **object**. Objects can contain information of different *data types*:
+
+|               |               |                                              |
+|-----------------|-----------------|--------------------------------------|
+| **Numeric**   | Numbers       | `c(1, 2.4, 3.14, 4)`                         |
+| **Character** | Text          | `c("1", "blue", "fun", "monster")`           |
+| **Logical**   | True or false | `c(TRUE, FALSE, TRUE, FALSE)`                |
+| **Factor**    | Category      | `c("Strongly disagree", "Agree", "Neutral")` |
+
+We will start with the first three kinds, and add factors later during the semester.
+
+Let's see an example:
+
+```{r}
+# number of semesters you are in Mannheim
+study_semester <- 12
+
+# now we created an (numeric) object called "study_semester"
+study_semester
+```
+
+Now you can see the object `study_semester` in the *Environment* tab.
+
+The `class()` command lets us check the type of an object, so to understand the kind of information is in the object:
+
+```{r}
+class(study_semester)
+```
+
+We can also create objects of other kinds similarly:
+
+```{r}
+first_name <- "" # this is a character object
+first_name
+
+class(first_name)
+
+last_name <- ""
+last_name
+
+female <- TRUE # this is a logical object
+```
+
+We can also remove and overwrite objects:
+
+```{r}
+# removes the object
+rm(last_name)
+
+# assigning a new value overwrites the object
+study_semester <- "12"
+study_semester
+class(study_semester)
+
+study_semester <- "twelve"
+study_semester
+class(study_semester)
+```
+
+We will obviously not be working with a single value, but rather with many values stored in the same object all at once.
+
+There are various kinds of *data structures* `R` can handle. Here are some of them:
+
+-   **Vector**: sets of scalars (i.e., 1+ of numbers, characters, logical)
+-   **Matrix**: two-dimensional set of scalars of *same* type
+-   **Data frame**: collections of vectors of (possibly) different types
+-   **Array**: multidimensional set of scalars of same type
+-   **List**: combinations of scalars, vectors, matrices...
+
+Here are some examples for each:
+
+```{r}
+vector <- c(1, 3, 8)
+vector
+another_vector <- c("one", "three", "eight")
+another_vector
+yet_another_vector <- c(TRUE, FALSE, TRUE)
+yet_another_vector
+
+# 2 by 2 matrix with numeric values
+matrix <- matrix(data = c(1, 2, 3, 4), nrow = 2)
+matrix
+
+# combine the vectors from above into a data frame
+df <- data.frame(vector, another_vector, yet_another_vector)
+df
+
+# we can also recode objects
+df <- as.data.frame(matrix)
+df
+
+# arrays are like stacked matrices
+array(data = 1:6, c(2, 3))
+array(data = 1:8, c(2, 2, 2))
+
+# lists can store various types of objects at once
+ls <- list("5", vector, yet_another_vector, matrix)
+ls
+```
+
+Since `R` was created as a language for data analysis, it is very easy to work with *datasets*, which contain combinations of variables (think of variables as vectors). We will mostly be working with dataframes in this class.
+
+## Working with a Dataset
+
+Data usually needs to be loaded into R rather than entered by hand. `R` can load multiple objects into the environment, which means it can load multiple datasets at once. Let's start with one.
+
+### Loading a `csv` file
+
+Let's take a look at the voting history of countries in the United Nations General Assembly. I have prepared the dataset for you and it is located in the `data` subfolder of our project. Our dataset comes in a common format of *comma separated values* (extension `csv`). There are different ways to load it, but we will be using a function from the `readr` package from *tidyverse* universe to load the dataset into the environment.
+
+These are the steps you normally need to do when working with a function from an external package:
+
+```{r}
+# install the package
+# only needs to be done once on your machine
+# better put all the installation stuff in the setup chunk
+# install.packages("readr")
+
+# load the package
+# needs to be done every time you come back to working on the project
+library(readr)
+```
+
+| **Advice:** use short but descriptive names for objects: e.g., `df` is short but not descriptive, but `votes_from_un_general_assembly` may be too long.
+
+We also need to tell `R` where to find the file. Here let's distinguish between relative and absolute file paths. An **absolute path** always contains the root element and the complete directory list required to locate the file. This is what people would call an absolute path to `dataset.csv` object:
+
+``` verbatim
+C:/Users/viktoriia/path/on/my-laptop/project-folder/data/dataset.csv
+```
+
+These will differ across computers, so using absolute paths should be a no-go. 
+
+A **relative path** needs to be combined with another path in order to access a file. If we are located in the project folder, to access the same file `dataset.csv` located in the `data` subfolder in the project folder, we will need to write this:
+
+``` verbatim
+data/dataset.csv
+```
+
+Our loading of the file becomes very straightforward:
+
+```{r}
+un_votes <- read_csv("data/un_votes.csv")
+```
+
+| **Advice**: do not make `R` print out full datasets (like in the chunk below).
+
+```{r}
+un_votes # don't do this
+```
+
+### Viewing raw data
+
+The first thing to do when loading the data would be to check that it loaded correctly. If it's a small dataset, you can just look at the raw data. You can view the dataset as a spreadsheet using the `View()` function. Note that you **should not put this function in your `qmd` file**, but instead type it directly in the *Console*, as it pops open a new window (and the concept of popping open a window in a static document doesn't really make sense...). When you run this in the console, you'll see the following data viewer window pop up. Though most often looking at raw data won't be too helpful anyway.
+
+### Learning about the dataset
+
+Let's first check that there are columns and rows in the data:
+
+```{r}
+nrow(un_votes) # number of rows
+ncol(un_votes) # number of columns
+dim(un_votes) # rows columns together (Roller Coaster)
+```
+
+We may also now want to see the names of the variables, the columns:
+
+```{r}
+colnames(un_votes)
+```
+
+We can use more than one function at once. Can you guess what `length` command does here?
+
+```{r}
+length(colnames(un_votes))
+```
+
+### Using pipes `%>%`
+
+A slightly more intuitive way to write the same thing would be with a *pipe* `%>%`. This thing comes from *tidyverse* package, so you need to load it. When you will need to write long code with multiple functions applied step-by-step, it will become very straightforward to follow the steps if you use pipes.
+
+*FYI:* Recently, `R` has added their native pipe which looks like `|>`. You do not need any packages to use it, but for a number of reasons I will stick to the `tidyverse` one (`%>%`) in this class. If that is what you are used to, you are welcome to use it instead.
+
+```{r}
+colnames(un_votes) %>% # take the vector colnames(students)
+  length() # return the length of this vector
+
+un_votes %>% # take the object students
+  colnames() %>% # get column names vector
+  length() # return the length of this vector
+```
+
+### Overview of the dataframe
+
+There are multiple functions in `R` that you can use to have a more detailed overlook of the data.
+
+If you just want to look at the first/last few rows (observations), you can do it with `head` or `tail`. If you don't specify the number of rows you want to see with `n = 10` argument, by default you will see six rows.
+
+```{r}
+head(un_votes)
+tail(un_votes, n = 10)
+```
+
+To have an overlook of the dataset variables with some descriptive statistics (for numeric variables), number of missing values, and class for non-numeric variables, we can use `summary` command:
+
+```{r}
+summary(un_votes)
+```
+
+This is usually useful to make sure that the variables in the dataset were read correctly (e.g., the ones that you expect to be numeric, such as age, would actually be numeric).
+
+Another command that produces much output at once would be `glimpse` from `dplyr`.
+
+```{r}
+glimpse(un_votes)
+```
+
+And lastly, one pretty useful function is `unique()`, which allows us to see only the unique values in the vector/column of a dataset. Let's look at what issue areas we have in the dataset:
+
+```{r}
+un_votes$issue %>%
+  unique()
+```
+
+| How would you count the number of unique issue areas?
+
+```{r}
+un_votes$issue %>%
+  unique()
+```
+
+## First plots
+
+Now let's move to the fun part--some data visualization! For now, I will tell you that we are using the package `ggplot2` for building the plots. We will go through the process of creating a plot step-by-step next week, so for now you will need to just look at the anatomy and run the code in the chunk below.
+
+### Share of "Yes"-votes
+
+```{r}
+ggplot(data = un_votes, mapping = aes(x = percent_yes)) +
+  geom_histogram()
+```
+
+| Can you rewrite the code from the chunk above but use a pipe?
+| Hint: `print(object)` is the same as `object %>% print()` or `object %>% print(.)`
+
+```{r}
+# copypaste the code from above and try adjusting it!
+```
+
+### UN General Assembly Vote Trends
+
+First, let's take a look at how often each country voted "yes" on a resolution in each year. We'll visualize the results, so let's pick a few countries of interest first.
+
+```{r}
+country_list <- c("United States", "China", "Mexico", "Turkey")
+```
+
+And let's only look at *Human Rights* votes for now.
+
+```{r}
+un_votes %>% # take the dataset
+  filter(
+    country %in% country_list, # select rows for countries in from country_list
+    issue %in% c("Human rights") # select cases for human rights votes
+  ) %>%
+  ggplot(mapping = aes(x = year, y = percent_yes, color = country)) +
+  geom_line() +
+  ylab("% of votes that are 'Yes'") +
+  scale_color_scico_d(palette = "berlin") + # adjust color
+  theme_minimal() + # change the appearance
+  theme(legend.position = "top") # change legend position
+```
+
+Next, let's see how Italy and France's voting record changed over the years on each of the issues. Run the code below and look at the plot to find out what is depicted there.
+
+```{r}
+un_votes %>% # take the dataset
+  filter(
+    country %in% c("Italy", "France"), # select the countries to work with
+    votes > 5 # only use records where there are more than 5 votes
+  ) %>%
+  ggplot(mapping = aes(
+    x = year, # over horizontal axis
+    y = percent_yes, # over vertical axis
+    color = country
+  )) +
+  geom_point() + # add points
+  geom_smooth(method = "loess", se = FALSE) + # add trend line
+  facet_wrap(~issue) + # split by issue
+  labs(
+    title = "Share of 'Yes' votes in the UN General Assembly",
+    subtitle = "1946 to 2019",
+    y = "% Yes Votes",
+    x = "Year",
+    color = "Country"
+  ) +
+  scale_color_scico_d(palette = "berlin") + # adjust color
+  theme_minimal() + # change the appearance
+  theme(legend.position = "top") # change legend position
+```
+
+```{r, eval=knitr::is_html_output()}
+un_votes %>%
+  arrange(country) %>%
+  select(country) %>%
+  distinct() %>%
+  datatable()
+```
