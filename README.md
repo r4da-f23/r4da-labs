@@ -1,22 +1,22 @@
-# Week 1: Meet the Toolkit 
+# Week 1: Meet the Toolkit
 ## February 14, 2023
 
-This repo contains the material for our first code-along. To proceed, you need to install all the software on your machine. You can find the instructons on our course website: https://r4da.live/resource/install.html. 
+This repo has the following structure: 
 
-This repo contains the files and folders:
-
-- `Readme.md`: the current file
-- `week01_meet_the_toolkit.Rproj`: the RStudio project file
-- `r4da_week01.qmd`: the Quarto markdown document (main file with analysis)
-- `r4da_week01.pdf`: PDF file with the output from `r4da_week01.qmd`
-- `r4da_week01.html`: HTML file with the output from `r4da_week01.qmd`
-- `.gitignore`: internal file which controls the files that are tracked in version control 
-- `data/un_votes.csv`: dataset in comma separated values format 
-- `images`: subfolder with images by files in the repo 
-- `r4da_week01_files`: subfolder with files for HTML output document 
-
-
-Your first step should be to clone the repository onto your machine. This is how you can do it:
+```
+├── data
+│   └── un_votes.csv
+├── figures
+├── images
+│   ├── github-code-url.png
+│   ├── new-project.png
+│   ├── quarto.png
+│   └── rstudio.png
+├── README.md
+├── r4da_week01.pdf
+├── r4da_week01.qmd
+└── week01_meet_the_toolkit.Rproj
+```
 
 ### How to load the project into RStudio 
 

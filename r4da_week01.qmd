@@ -1,59 +1,87 @@
 ---
 title: "Lab 1: Meet the Toolkit"
 author: "Viktoriia Semenova"
-format: html
 editor: visual
-date: "February 14, 2023"
+date: "September 06, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
 ---
 
-```{r setup, include=FALSE}
+```{r setup}
+#| include: false
 # packages needed
-install.packages(c("tidyverse", "scico", "DT"),
-  repos = "http://cran.us.r-project.org"
-)
+install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+install.packages("DT", repos = "http://cran.us.r-project.org")
 
 # load the packages
 # only need to do this once in the
 library(tidyverse) 
-library(scico) # for color palette 
 library(DT) # for interactive table 
 ```
 
-Welcome to your first lab! 🎉
+```{r}
+#| label: RStudio defaults
+#| eval: false
+#| include: false
+# This chunk will 
+message("Changing RStudio settings to better defaults.")
+rstudioapi::writeRStudioPreference("save_workspace", "never")
+rstudioapi::writeRStudioPreference("load_workspace", FALSE)
+rstudioapi::writeRStudioPreference("insert_native_pipe_operator", TRUE)
+rstudioapi::writeRStudioPreference("show_hidden_files", TRUE)
+rstudioapi::writeRStudioPreference("rmd_viewer_type", "pane")
+rstudioapi::writeRStudioPreference("always_save_history", TRUE)
+rstudioapi::writeRStudioPreference("auto_append_newline", TRUE)
+rstudioapi::writeRStudioPreference("soft_wrap_r_files", TRUE)
+```
 
-Let's start with an overlook of Rstudio.
+\newpage 
+
 
 ## The RStudio interface
 
-```{r, echo=FALSE, out.width="100%", fig.align = 'center'}
+```{r interface, echo=FALSE, out.width="100%", fig.align = 'center'}
 knitr::include_graphics("images/rstudio.png")
 ```
 
 By default, you will see these panes:
 
--   **Editor**: This is were you usually code. You can open many different kinds of documents here. We will mostly be using Quarto documents (with a .`qmd` extension, Quarto Markdown), but you will see people use `.Rmd` (R Markdown) or `.R` (plain R code) files.
--   **Console**: This is where the results appear once you execute your R-code. You can also directly type R-code into the console and execute it. This code does not get saved in your files, so better write in the *Editor*.
+-   **Editor**: This is were you usually code. You can open many different kinds of documents here. We will mostly be using Quarto documents (with a .`qmd` extension, **Q**uarto **M**ark**d**own), but you will see people use `.Rmd` (**R** **M**ark**d**own) or `.R` (plain R code) files.
+-   **Console**: This is where the results appear once you execute your R-code. You can also directly type R-code into the console and execute it. This code does not get saved in your files, so better write in the *Editor*. When no code is executing, we see a `>` on the last line.
 -   **Environment, History, Connections, Git, Tutorial**: Two are relevant for us:
-    -   In the **Environment** you have an overview over all the objects currently loaded in your environment (like datasets for). You will learn more about objects later in the course.
+    -   In the **Environment** you have an overview over all the objects currently loaded in your environment (like datasets for example). You will learn more about objects later in the course.
 
     -   In **Git** we will use version control and communicate to GitHub.
 -   **Files, Plots, Packages, Help, Viewer**: Plots and other things will appear here, don't worry too much about it for the moment.
 
-## This Document
+## Working with Rstudio Projects
 
-```{r, echo=FALSE, out.width="100%", fig.align = 'center'}
-knitr::include_graphics("images/quarto.png")
-```
+RStudio allows for a clean organisation of your work using *Projects*. If you have an Rstudio project associated with the folder, there will be a file there with extension `.RProj`. **Always open the `.RProj` file when opening the existing project, and not `.qmd` directly**. In general, you usually need to specify your working folder (aka directory) when working with such programs as R or Stata. This is where your files will be stored automatically and from where files will be loaded too. *Projects* simplifies this step by setting the working folder to its location. Moreover, our integration with `Git` will only work when you open the correct *Project.*     
+
+
+## This Document
 
 ### YAML
 
-The top portion of this file (between the three dashed lines) is called **YAML** (/ˈjæməl/). It is a human-friendly data serialization standard for all programming languages. All you need to know is that this area is called the YAML (we will refer to it as such) and that it contains meta information about your document.
+The top portion of this file (between the three dashed lines) is called **YAML** (/ˈjæməl/). It is a human-friendly data serialization standard for all programming languages. All you need to know is that this area is called the YAML (we will refer to it as such) and that it contains meta information about your document, such as the title, date, and the desired output format.
 
 ### Code chunks
 
-With `qmd` files, you can write both text and code in the same file. You can insert new code chunks by clicking the green icon above or with a shortcuts: `Ctrl + Alt + I`/`Cmd + Option + I`. Here are some basic examples.
+With `qmd`/`rmd` files, you can write both text and code in the same file. You can insert new code chunks by clicking the green icon above or with a shortcuts: `Ctrl + Alt + I`/`Cmd + Option + I`. Here are some basic examples. By default, all these will be chunks for `R` code, as `{r}` in line 1 of the chunk tells us. Some additional information in that line like `{r, echo=FALSE, out.width="100%", fig.align = 'center'}` in the chunk above specifies how and whether the code inside that chunk is evaluated and dictates how the output of this chunk looks like (e.g., the width of the image). You will learn these details gradually through the semester.
 
-### R as a Calculator
+### `R` as a Calculator
 
 ```{r}
 5 + 7 ## R can be a calculator
@@ -104,7 +132,7 @@ print("three") # hashes do not cancel each other out # print(3)
 Now let's actually store something in `R`. This *something* will be called an **object**. Objects can contain information of different *data types*:
 
 |               |               |                                              |
-|------------------|------------------|-------------------------------------|
+|-------------------|-------------------|----------------------------------|
 | **Numeric**   | Numbers       | `c(1, 2.4, 3.14, 4)`                         |
 | **Character** | Text          | `c("1", "blue", "fun", "monster")`           |
 | **Logical**   | True or false | `c(TRUE, FALSE, TRUE, FALSE)`                |
@@ -209,7 +237,7 @@ Data usually needs to be loaded into R rather than entered by hand. `R` can load
 
 ### Loading a `csv` file
 
-Let's take a look at the voting history of countries in the United Nations General Assembly. I have prepared the dataset for you and it is located in the `data` subfolder of our project. Our dataset comes in a common format of *comma separated values* (extension `csv`). There are different ways to load it, but we will be using a function from the `readr` package from *tidyverse* universe to load the dataset into the environment.
+Let's take a look at the voting history of countries in the United Nations General Assembly. I have prepared the dataset for you and it is located in the `data` subfolder of our project. Our dataset comes in a common format of *comma separated values* (extension `csv`). This means that values in a dataset are separated with a comma (and not a period or tab or something else) and system will detect columns based on these commas. There are different ways to load it, but we will be using a function from the `readr` package from *tidyverse* universe to load the dataset into the environment.
 
 These are the steps you normally need to do when working with a function from an external package:
 
@@ -348,6 +376,7 @@ ggplot(data = un_votes, mapping = aes(x = percent_yes)) +
 
 ```{r}
 # copypaste the code from above and try adjusting it!
+# take the dataset
 ```
 
 ### UN General Assembly Vote Trends
@@ -368,9 +397,9 @@ un_votes %>% # take the dataset
   ) %>%
   ggplot(mapping = aes(x = year, y = percent_yes, color = country)) +
   geom_line() +
-  ylab("% of votes that are 'Yes'") +
-  scale_color_scico_d(palette = "berlin") + # adjust color
+  labs(y = "% of votes that are 'Yes'") +
   theme_minimal() + # change the appearance
+  scale_color_viridis_d() + # change the color 
   theme(legend.position = "top") # change legend position
 ```
 
@@ -397,8 +426,8 @@ un_votes %>% # take the dataset
     x = "Year",
     color = "Country"
   ) +
-  scale_color_scico_d(palette = "berlin") + # adjust color
   theme_minimal() + # change the appearance
+    scale_color_viridis_d() + # change the color 
   theme(legend.position = "top") # change legend position
 ```
 
