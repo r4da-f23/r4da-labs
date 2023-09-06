@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Viktoriia Semenova">
+<meta name="dcterms.date" content="2023-09-06">
+
+<title>Lab 1: Meet the Toolkit</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="r4da-week01_files/libs/clipboard/clipboard.min.js"></script>
+<script src="r4da-week01_files/libs/quarto-html/quarto.js"></script>
+<script src="r4da-week01_files/libs/quarto-html/popper.min.js"></script>
+<script src="r4da-week01_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="r4da-week01_files/libs/quarto-html/anchor.min.js"></script>
+<link href="r4da-week01_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="r4da-week01_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="r4da-week01_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="r4da-week01_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="r4da-week01_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="r4da-week01.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Lab 1: Meet the Toolkit</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Viktoriia Semenova </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 6, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div style="page-break-after: always;"></div>
+<section id="the-rstudio-interface" class="level2">
+<h2 class="anchored" data-anchor-id="the-rstudio-interface">The RStudio interface</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/rstudio.png" class="img-fluid figure-img" style="width:100.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>By default, you will see these panes:</p>
+<ul>
+<li><strong>Editor</strong>: This is were you usually code. You can open many different kinds of documents here. We will mostly be using Quarto documents (with a .<code>qmd</code> extension, <strong>Q</strong>uarto <strong>M</strong>ark<strong>d</strong>own), but you will see people use <code>.Rmd</code> (<strong>R</strong> <strong>M</strong>ark<strong>d</strong>own) or <code>.R</code> (plain R code) files.</li>
+<li><strong>Console</strong>: This is where the results appear once you execute your R-code. You can also directly type R-code into the console and execute it. This code does not get saved in your files, so better write in the <em>Editor</em>. When no code is executing, we see a <code>&gt;</code> on the last line.</li>
+<li><strong>Environment, History, Connections, Git, Tutorial</strong>: Two are relevant for us:
+<ul>
+<li><p>In the <strong>Environment</strong> you have an overview over all the objects currently loaded in your environment (like datasets for example). You will learn more about objects later in the course.</p></li>
+<li><p>In <strong>Git</strong> we will use version control and communicate to GitHub.</p></li>
+</ul></li>
+<li><strong>Files, Plots, Packages, Help, Viewer</strong>: Plots and other things will appear here, don’t worry too much about it for the moment.</li>
+</ul>
+</section>
+<section id="working-with-rstudio-projects" class="level2">
+<h2 class="anchored" data-anchor-id="working-with-rstudio-projects">Working with Rstudio Projects</h2>
+<p>RStudio allows for a clean organisation of your work using <em>Projects</em>. If you have an Rstudio project associated with the folder, there will be a file there with extension <code>.RProj</code>. <strong>Always open the <code>.RProj</code> file when opening the existing project, and not <code>.qmd</code> directly</strong>. In general, you usually need to specify your working folder (aka directory) when working with such programs as R or Stata. This is where your files will be stored automatically and from where files will be loaded too. <em>Projects</em> simplifies this step by setting the working folder to its location. Moreover, our integration with <code>Git</code> will only work when you open the correct <em>Project.</em></p>
+</section>
+<section id="this-document" class="level2">
+<h2 class="anchored" data-anchor-id="this-document">This Document</h2>
+<section id="yaml" class="level3">
+<h3 class="anchored" data-anchor-id="yaml">YAML</h3>
+<p>The top portion of this file (between the three dashed lines) is called <strong>YAML</strong> (/ˈjæməl/). It is a human-friendly data serialization standard for all programming languages. All you need to know is that this area is called the YAML (we will refer to it as such) and that it contains meta information about your document, such as the title, date, and the desired output format.</p>
+</section>
+<section id="code-chunks" class="level3">
+<h3 class="anchored" data-anchor-id="code-chunks">Code chunks</h3>
+<p>With <code>qmd</code>/<code>rmd</code> files, you can write both text and code in the same file. You can insert new code chunks by clicking the green icon above or with a shortcuts: <code>Ctrl + Alt + I</code>/<code>Cmd + Option + I</code>. Here are some basic examples. By default, all these will be chunks for <code>R</code> code, as <code>{r}</code> in line 1 of the chunk tells us. Some additional information in that line like <code>{r, echo=FALSE, out.width="100%", fig.align = 'center'}</code> in the chunk above specifies how and whether the code inside that chunk is evaluated and dictates how the output of this chunk looks like (e.g., the width of the image). You will learn these details gradually through the semester.</p>
+</section>
+<section id="r-as-a-calculator" class="level3">
+<h3 class="anchored" data-anchor-id="r-as-a-calculator"><code>R</code> as a Calculator</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span> <span class="sc">+</span> <span class="dv">7</span> <span class="do">## R can be a calculator</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span> <span class="sc">*</span> <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 20</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="sc">^</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span> <span class="sc">/</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.414214</code></pre>
+</div>
+</div>
+<p>If you place parentheses correctly, <code>R</code> incorporates the order of operations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>((<span class="dv">1</span> <span class="sc">+</span> <span class="dv">2</span>) <span class="sc">*</span> <span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 36</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (3 * 2)^2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can also use other math <em>functions</em> you know from your calculator:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># square root function (aka command)</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="at">x =</span> <span class="dv">2</span>) <span class="co"># x is an argument</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.414214</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="dv">2</span>) <span class="co"># also works without writing "x" explicitly</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.414214</code></pre>
+</div>
+</div>
+</section>
+<section id="comments" class="level3">
+<h3 class="anchored" data-anchor-id="comments">Comments</h3>
+<p>The chunks above contain not just the code but also <em>comments</em>, so the text that is not executed (evaluated by <code>R</code>). You have two options for writing normal text in <code>qmd</code>/<code>rmd</code> files: as plain text (as this is written), and inside the chunk with comments (adding a hash symbol <code>#</code> so that everything on that line after the <code>#</code> gets commented out). Reserve comments for technical things and small notes, but if you need to write a sentence (like when answering questions in the problem sets for this class or actually writing a paper), use the Markdown part.</p>
+<p><strong>Word of advice:</strong> don’t be lazy, <strong>use comments</strong> even if you are not planning to share the code, you will thank yourself later. With comments, other people can better understand your code (say when I am grading your work or when you are working together on a problem set). But also, you can remember what you were doing when you come back to your code after some time (e.g., to prepare the final project at the end of the semester).</p>
+<p>This is how you add a comment:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is a comment</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="do">## this is also a comment</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="dv">3</span>) <span class="co"># code in this line runs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 + 1 code here does not run</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"three"</span>) <span class="co"># hashes do not cancel each other out # print(3)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "three"</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="data-basics-in-r" class="level2">
+<h2 class="anchored" data-anchor-id="data-basics-in-r">Data Basics in R</h2>
+<p>Now let’s actually store something in <code>R</code>. This <em>something</em> will be called an <strong>object</strong>. Objects can contain information of different <em>data types</em>:</p>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 26%">
+<col style="width: 47%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Numeric</strong></td>
+<td>Numbers</td>
+<td><code>c(1, 2.4, 3.14, 4)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Character</strong></td>
+<td>Text</td>
+<td><code>c("1", "blue", "fun", "monster")</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Logical</strong></td>
+<td>True or false</td>
+<td><code>c(TRUE, FALSE, TRUE, FALSE)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Factor</strong></td>
+<td>Category</td>
+<td><code>c("Strongly disagree", "Agree", "Neutral")</code></td>
+</tr>
+</tbody>
+</table>
+<p>We will start with the first three kinds, and add factors later during the semester.</p>
+<p>Let’s see an example:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># number of semesters you are in Mannheim</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="dv">12</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># now we created an (numeric) object called "study_semester"</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>study_semester</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+</div>
+<p>Now you can see the object <code>study_semester</code> in the <em>Environment</em> tab.</p>
+<p>The <code>class()</code> command lets us check the type of an object, so to understand the kind of information is in the object:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "numeric"</code></pre>
+</div>
+</div>
+<p>We can also create objects of other kinds similarly:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>first_name <span class="ot">&lt;-</span> <span class="st">""</span> <span class="co"># this is a character object</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>first_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] ""</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(first_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "character"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>last_name <span class="ot">&lt;-</span> <span class="st">""</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>last_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] ""</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>female <span class="ot">&lt;-</span> <span class="cn">TRUE</span> <span class="co"># this is a logical object</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can also remove and overwrite objects:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># removes the object</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(last_name)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># assigning a new value overwrites the object</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="st">"12"</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>study_semester</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "12"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "character"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="st">"twelve"</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>study_semester</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "twelve"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "character"</code></pre>
+</div>
+</div>
+<p>We will obviously not be working with a single value, but rather with many values stored in the same object all at once.</p>
+<p>There are various kinds of <em>data structures</em> <code>R</code> can handle. Here are some of them:</p>
+<ul>
+<li><strong>Vector</strong>: sets of scalars (i.e., 1+ of numbers, characters, logical)</li>
+<li><strong>Matrix</strong>: two-dimensional set of scalars of <em>same</em> type</li>
+<li><strong>Data frame</strong>: collections of vectors of (possibly) different types</li>
+<li><strong>Array</strong>: multidimensional set of scalars of same type</li>
+<li><strong>List</strong>: combinations of scalars, vectors, matrices…</li>
+</ul>
+<p>Here are some examples for each:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">8</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>vector</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 3 8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>another_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"one"</span>, <span class="st">"three"</span>, <span class="st">"eight"</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>another_vector</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "one"   "three" "eight"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>yet_another_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>yet_another_vector</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE  TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2 by 2 matrix with numeric values</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>matrix</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2]
+[1,]    1    3
+[2,]    2    4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># combine the vectors from above into a data frame</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(vector, another_vector, yet_another_vector)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  vector another_vector yet_another_vector
+1      1            one               TRUE
+2      3          three              FALSE
+3      8          eight               TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also recode objects</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(matrix)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  V1 V2
+1  1  3
+2  2  4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># arrays are like stacked matrices</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2] [,3]
+[1,]    1    3    5
+[2,]    2    4    6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>, , 1
+
+     [,1] [,2]
+[1,]    1    3
+[2,]    2    4
+
+, , 2
+
+     [,1] [,2]
+[1,]    5    7
+[2,]    6    8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># lists can store various types of objects at once</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>ls <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"5"</span>, vector, yet_another_vector, matrix)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>ls</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "5"
+
+[[2]]
+[1] 1 3 8
+
+[[3]]
+[1]  TRUE FALSE  TRUE
+
+[[4]]
+     [,1] [,2]
+[1,]    1    3
+[2,]    2    4</code></pre>
+</div>
+</div>
+<p>Since <code>R</code> was created as a language for data analysis, it is very easy to work with <em>datasets</em>, which contain combinations of variables (think of variables as vectors). We will mostly be working with dataframes in this class.</p>
+</section>
+<section id="working-with-a-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="working-with-a-dataset">Working with a Dataset</h2>
+<p>Data usually needs to be loaded into R rather than entered by hand. <code>R</code> can load multiple objects into the environment, which means it can load multiple datasets at once. Let’s start with one.</p>
+<section id="loading-a-csv-file" class="level3">
+<h3 class="anchored" data-anchor-id="loading-a-csv-file">Loading a <code>csv</code> file</h3>
+<p>Let’s take a look at the voting history of countries in the United Nations General Assembly. I have prepared the dataset for you and it is located in the <code>data</code> subfolder of our project. Our dataset comes in a common format of <em>comma separated values</em> (extension <code>csv</code>). This means that values in a dataset are separated with a comma (and not a period or tab or something else) and system will detect columns based on these commas. There are different ways to load it, but we will be using a function from the <code>readr</code> package from <em>tidyverse</em> universe to load the dataset into the environment.</p>
+<p>These are the steps you normally need to do when working with a function from an external package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install the package</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="co"># only needs to be done once on your machine</span></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="co"># better put all the installation stuff in the setup chunk</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("readr")</span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a><span class="co"># load the package</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a><span class="co"># needs to be done every time you come back to working on the project</span></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Advice:</strong> use short but descriptive names for objects: e.g., <code>df</code> is short but not descriptive, but <code>votes_from_un_general_assembly</code> may be too long.</p>
+<p>We also need to tell <code>R</code> where to find the file. Here let’s distinguish between relative and absolute file paths. An <strong>absolute path</strong> always contains the root element and the complete directory list required to locate the file. This is what people would call an absolute path to <code>dataset.csv</code> object:</p>
+<pre class="verbatim"><code>C:/Users/viktoriia/path/on/my-laptop/project-folder/data/dataset.csv</code></pre>
+<p>These will differ across computers, so using absolute paths should be a no-go.</p>
+<p>A <strong>relative path</strong> needs to be combined with another path in order to access a file. If we are located in the project folder, to access the same file <code>dataset.csv</code> located in the <code>data</code> subfolder in the project folder, we will need to write this:</p>
+<pre class="verbatim"><code>data/dataset.csv</code></pre>
+<p>Our loading of the file becomes very straightforward:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>un_votes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/un_votes.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 59284 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): country, issue
+dbl (3): year, votes, percent_yes
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<p><strong>Advice</strong>: do not make <code>R</code> print out full datasets (like in the chunk below).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>un_votes <span class="co"># don't do this</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 59,284 × 5
+   country      year issue                        votes percent_yes
+   &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;                        &lt;dbl&gt;       &lt;dbl&gt;
+ 1 Afghanistan  1946 Colonialism                      5      0.8   
+ 2 Afghanistan  1946 Economic development             6      0.667 
+ 3 Afghanistan  1946 Human rights                     1      1     
+ 4 Afghanistan  1947 Colonialism                      8      0.5   
+ 5 Afghanistan  1947 Economic development             2      0.5   
+ 6 Afghanistan  1947 Palestinian conflict             7      0.857 
+ 7 Afghanistan  1948 Colonialism                     12      0.0833
+ 8 Afghanistan  1948 Arms control and disarmament     9      1     
+ 9 Afghanistan  1948 Economic development             8      0.75  
+10 Afghanistan  1948 Human rights                     6      0.833 
+# ℹ 59,274 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="viewing-raw-data" class="level3">
+<h3 class="anchored" data-anchor-id="viewing-raw-data">Viewing raw data</h3>
+<p>The first thing to do when loading the data would be to check that it loaded correctly. If it’s a small dataset, you can just look at the raw data. You can view the dataset as a spreadsheet using the <code>View()</code> function. Note that you <strong>should not put this function in your <code>qmd</code> file</strong>, but instead type it directly in the <em>Console</em>, as it pops open a new window (and the concept of popping open a window in a static document doesn’t really make sense…). When you run this in the console, you’ll see the following data viewer window pop up. Though most often looking at raw data won’t be too helpful anyway.</p>
+</section>
+<section id="learning-about-the-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="learning-about-the-dataset">Learning about the dataset</h3>
+<p>Let’s first check that there are columns and rows in the data:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(un_votes) <span class="co"># number of rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 59284</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(un_votes) <span class="co"># number of columns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(un_votes) <span class="co"># rows columns together (Roller Coaster)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 59284     5</code></pre>
+</div>
+</div>
+<p>We may also now want to see the names of the variables, the columns:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(un_votes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "country"     "year"        "issue"       "votes"       "percent_yes"</code></pre>
+</div>
+</div>
+<p>We can use more than one function at once. Can you guess what <code>length</code> command does here?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">colnames</span>(un_votes))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5</code></pre>
+</div>
+</div>
+</section>
+<section id="using-pipes" class="level3">
+<h3 class="anchored" data-anchor-id="using-pipes">Using pipes <code>%&gt;%</code></h3>
+<p>A slightly more intuitive way to write the same thing would be with a <em>pipe</em> <code>%&gt;%</code>. This thing comes from <em>tidyverse</em> package, so you need to load it. When you will need to write long code with multiple functions applied step-by-step, it will become very straightforward to follow the steps if you use pipes.</p>
+<p><em>FYI:</em> Recently, <code>R</code> has added their native pipe which looks like <code>|&gt;</code>. You do not need any packages to use it, but for a number of reasons I will stick to the <code>tidyverse</code> one (<code>%&gt;%</code>) in this class. If that is what you are used to, you are welcome to use it instead.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(un_votes) <span class="sc">%&gt;%</span> <span class="co"># take the vector colnames(students)</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>() <span class="co"># return the length of this vector</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the object students</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>() <span class="sc">%&gt;%</span> <span class="co"># get column names vector</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>() <span class="co"># return the length of this vector</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5</code></pre>
+</div>
+</div>
+</section>
+<section id="overview-of-the-dataframe" class="level3">
+<h3 class="anchored" data-anchor-id="overview-of-the-dataframe">Overview of the dataframe</h3>
+<p>There are multiple functions in <code>R</code> that you can use to have a more detailed overlook of the data.</p>
+<p>If you just want to look at the first/last few rows (observations), you can do it with <code>head</code> or <code>tail</code>. If you don’t specify the number of rows you want to see with <code>n = 10</code> argument, by default you will see six rows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(un_votes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+  country      year issue                votes percent_yes
+  &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;                &lt;dbl&gt;       &lt;dbl&gt;
+1 Afghanistan  1946 Colonialism              5       0.8  
+2 Afghanistan  1946 Economic development     6       0.667
+3 Afghanistan  1946 Human rights             1       1    
+4 Afghanistan  1947 Colonialism              8       0.5  
+5 Afghanistan  1947 Economic development     2       0.5  
+6 Afghanistan  1947 Palestinian conflict     7       0.857</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(un_votes, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 5
+   country   year issue                                votes percent_yes
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;                                &lt;dbl&gt;       &lt;dbl&gt;
+ 1 Zimbabwe  2018 Economic development                    18      0.167 
+ 2 Zimbabwe  2018 Human rights                            22      0.318 
+ 3 Zimbabwe  2018 Palestinian conflict                    16      0.0625
+ 4 Zimbabwe  2018 Nuclear weapons and nuclear material    16      0.0625
+ 5 Zimbabwe  2019 Colonialism                             16      0.312 
+ 6 Zimbabwe  2019 Arms control and disarmament            16      0.312 
+ 7 Zimbabwe  2019 Economic development                    16      0.312 
+ 8 Zimbabwe  2019 Human rights                            14      0.286 
+ 9 Zimbabwe  2019 Palestinian conflict                    14      0     
+10 Zimbabwe  2019 Nuclear weapons and nuclear material    17      0.412 </code></pre>
+</div>
+</div>
+<p>To have an overlook of the dataset variables with some descriptive statistics (for numeric variables), number of missing values, and class for non-numeric variables, we can use <code>summary</code> command:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(un_votes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   country               year         issue               votes      
+ Length:59284       Min.   :1946   Length:59284       Min.   : 1.00  
+ Class :character   1st Qu.:1977   Class :character   1st Qu.: 9.00  
+ Mode  :character   Median :1993   Mode  :character   Median :14.00  
+                    Mean   :1991                      Mean   :14.47  
+                    3rd Qu.:2006                      3rd Qu.:20.00  
+                    Max.   :2019                      Max.   :41.00  
+  percent_yes    
+ Min.   :0.0000  
+ 1st Qu.:0.0000  
+ Median :0.1053  
+ Mean   :0.2091  
+ 3rd Qu.:0.3333  
+ Max.   :1.0000  </code></pre>
+</div>
+</div>
+<p>This is usually useful to make sure that the variables in the dataset were read correctly (e.g., the ones that you expect to be numeric, such as age, would actually be numeric).</p>
+<p>Another command that produces much output at once would be <code>glimpse</code> from <code>dplyr</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(un_votes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 59,284
+Columns: 5
+$ country     &lt;chr&gt; "Afghanistan", "Afghanistan", "Afghanistan", "Afghanistan"…
+$ year        &lt;dbl&gt; 1946, 1946, 1946, 1947, 1947, 1947, 1948, 1948, 1948, 1948…
+$ issue       &lt;chr&gt; "Colonialism", "Economic development", "Human rights", "Co…
+$ votes       &lt;dbl&gt; 5, 6, 1, 8, 2, 7, 12, 9, 8, 6, 11, 3, 14, 3, 5, 6, 14, 3, …
+$ percent_yes &lt;dbl&gt; 0.80000000, 0.66666667, 1.00000000, 0.50000000, 0.50000000…</code></pre>
+</div>
+</div>
+<p>And lastly, one pretty useful function is <code>unique()</code>, which allows us to see only the unique values in the vector/column of a dataset. Let’s look at what issue areas we have in the dataset:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>un_votes<span class="sc">$</span>issue <span class="sc">%&gt;%</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Colonialism"                         
+[2] "Economic development"                
+[3] "Human rights"                        
+[4] "Palestinian conflict"                
+[5] "Arms control and disarmament"        
+[6] "Nuclear weapons and nuclear material"</code></pre>
+</div>
+</div>
+<p>How would you count the number of unique issue areas?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>un_votes<span class="sc">$</span>issue <span class="sc">%&gt;%</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Colonialism"                         
+[2] "Economic development"                
+[3] "Human rights"                        
+[4] "Palestinian conflict"                
+[5] "Arms control and disarmament"        
+[6] "Nuclear weapons and nuclear material"</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="first-plots" class="level2">
+<h2 class="anchored" data-anchor-id="first-plots">First plots</h2>
+<p>Now let’s move to the fun part–some data visualization! For now, I will tell you that we are using the package <code>ggplot2</code> for building the plots. We will go through the process of creating a plot step-by-step next week, so for now you will need to just look at the anatomy and run the code in the chunk below.</p>
+<section id="share-of-yes-votes" class="level3">
+<h3 class="anchored" data-anchor-id="share-of-yes-votes">Share of “Yes”-votes</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> un_votes, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> percent_yes)) <span class="sc">+</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="r4da-week01_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Can you rewrite the code from the chunk above but use a pipe?<br>
+Hint: <code>print(object)</code> is the same as <code>object %&gt;% print()</code> or <code>object %&gt;% print(.)</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># copypaste the code from above and try adjusting it!</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a><span class="co"># take the dataset</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="un-general-assembly-vote-trends" class="level3">
+<h3 class="anchored" data-anchor-id="un-general-assembly-vote-trends">UN General Assembly Vote Trends</h3>
+<p>First, let’s take a look at how often each country voted “yes” on a resolution in each year. We’ll visualize the results, so let’s pick a few countries of interest first.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>country_list <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"United States"</span>, <span class="st">"China"</span>, <span class="st">"Mexico"</span>, <span class="st">"Turkey"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>And let’s only look at <em>Human Rights</em> votes for now.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the dataset</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>    country <span class="sc">%in%</span> country_list, <span class="co"># select rows for countries in from country_list</span></span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>    issue <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Human rights"</span>) <span class="co"># select cases for human rights votes</span></span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> percent_yes, <span class="at">color =</span> country)) <span class="sc">+</span></span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"% of votes that are 'Yes'"</span>) <span class="sc">+</span></span>
+<span id="cb98-9"><a href="#cb98-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="co"># change the appearance</span></span>
+<span id="cb98-10"><a href="#cb98-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>() <span class="sc">+</span> <span class="co"># change the color </span></span>
+<span id="cb98-11"><a href="#cb98-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="co"># change legend position</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="r4da-week01_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Next, let’s see how Italy and France’s voting record changed over the years on each of the issues. Run the code below and look at the plot to find out what is depicted there.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the dataset</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>    country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Italy"</span>, <span class="st">"France"</span>), <span class="co"># select the countries to work with</span></span>
+<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>    votes <span class="sc">&gt;</span> <span class="dv">5</span> <span class="co"># only use records where there are more than 5 votes</span></span>
+<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb99-7"><a href="#cb99-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> year, <span class="co"># over horizontal axis</span></span>
+<span id="cb99-8"><a href="#cb99-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> percent_yes, <span class="co"># over vertical axis</span></span>
+<span id="cb99-9"><a href="#cb99-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> country</span>
+<span id="cb99-10"><a href="#cb99-10" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb99-11"><a href="#cb99-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="co"># add points</span></span>
+<span id="cb99-12"><a href="#cb99-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="co"># add trend line</span></span>
+<span id="cb99-13"><a href="#cb99-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>issue) <span class="sc">+</span> <span class="co"># split by issue</span></span>
+<span id="cb99-14"><a href="#cb99-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb99-15"><a href="#cb99-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Share of 'Yes' votes in the UN General Assembly"</span>,</span>
+<span id="cb99-16"><a href="#cb99-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"1946 to 2019"</span>,</span>
+<span id="cb99-17"><a href="#cb99-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"% Yes Votes"</span>,</span>
+<span id="cb99-18"><a href="#cb99-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb99-19"><a href="#cb99-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Country"</span></span>
+<span id="cb99-20"><a href="#cb99-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb99-21"><a href="#cb99-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="co"># change the appearance</span></span>
+<span id="cb99-22"><a href="#cb99-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis_d</span>() <span class="sc">+</span> <span class="co"># change the color </span></span>
+<span id="cb99-23"><a href="#cb99-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="co"># change legend position</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="r4da-week01_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<!-- -->
+
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb101" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Lab 1: Meet the Toolkit"</span></span>
+<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Viktoriia Semenova"</span></span>
+<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span><span class="co"> visual</span></span>
+<span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "September 06, 2023"</span></span>
+<span id="cb101-6"><a href="#cb101-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb101-7"><a href="#cb101-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html: </span></span>
+<span id="cb101-8"><a href="#cb101-8" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: slides.scss </span></span>
+<span id="cb101-9"><a href="#cb101-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: false</span></span>
+<span id="cb101-10"><a href="#cb101-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb101-11"><a href="#cb101-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-summary: "Show the code"</span></span>
+<span id="cb101-12"><a href="#cb101-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-overflow: wrap</span></span>
+<span id="cb101-13"><a href="#cb101-13" aria-hidden="true" tabindex="-1"></a><span class="co">  pdf:</span></span>
+<span id="cb101-14"><a href="#cb101-14" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb101-15"><a href="#cb101-15" aria-hidden="true" tabindex="-1"></a><span class="co">    colorlinks: true</span></span>
+<span id="cb101-16"><a href="#cb101-16" aria-hidden="true" tabindex="-1"></a><span class="co">    geometry: </span></span>
+<span id="cb101-17"><a href="#cb101-17" aria-hidden="true" tabindex="-1"></a><span class="co">      - top=30mm</span></span>
+<span id="cb101-18"><a href="#cb101-18" aria-hidden="true" tabindex="-1"></a><span class="co">      - left=30mm</span></span>
+<span id="cb101-19"><a href="#cb101-19" aria-hidden="true" tabindex="-1"></a><span class="an">highlight-style:</span><span class="co"> github</span></span>
+<span id="cb101-20"><a href="#cb101-20" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb101-21"><a href="#cb101-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-22"><a href="#cb101-22" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup}</span></span>
+<span id="cb101-23"><a href="#cb101-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb101-24"><a href="#cb101-24" aria-hidden="true" tabindex="-1"></a><span class="co"># packages needed</span></span>
+<span id="cb101-25"><a href="#cb101-25" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"tidyverse"</span>, <span class="at">repos =</span> <span class="st">"http://cran.us.r-project.org"</span>)</span>
+<span id="cb101-26"><a href="#cb101-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-27"><a href="#cb101-27" aria-hidden="true" tabindex="-1"></a><span class="co"># load the packages</span></span>
+<span id="cb101-28"><a href="#cb101-28" aria-hidden="true" tabindex="-1"></a><span class="co"># only need to do this once in the</span></span>
+<span id="cb101-29"><a href="#cb101-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span>
+<span id="cb101-30"><a href="#cb101-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-31"><a href="#cb101-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-34"><a href="#cb101-34" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-35"><a href="#cb101-35" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: RStudio defaults</span></span>
+<span id="cb101-36"><a href="#cb101-36" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb101-37"><a href="#cb101-37" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb101-38"><a href="#cb101-38" aria-hidden="true" tabindex="-1"></a><span class="co"># This chunk will </span></span>
+<span id="cb101-39"><a href="#cb101-39" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">"Changing RStudio settings to better defaults."</span>)</span>
+<span id="cb101-40"><a href="#cb101-40" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"save_workspace"</span>, <span class="st">"never"</span>)</span>
+<span id="cb101-41"><a href="#cb101-41" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"load_workspace"</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb101-42"><a href="#cb101-42" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"insert_native_pipe_operator"</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-43"><a href="#cb101-43" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"show_hidden_files"</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-44"><a href="#cb101-44" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"rmd_viewer_type"</span>, <span class="st">"pane"</span>)</span>
+<span id="cb101-45"><a href="#cb101-45" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"always_save_history"</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-46"><a href="#cb101-46" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"auto_append_newline"</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-47"><a href="#cb101-47" aria-hidden="true" tabindex="-1"></a>rstudioapi<span class="sc">::</span><span class="fu">writeRStudioPreference</span>(<span class="st">"soft_wrap_r_files"</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-48"><a href="#cb101-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-49"><a href="#cb101-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-50"><a href="#cb101-50" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb101-51"><a href="#cb101-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-52"><a href="#cb101-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## The RStudio interface</span></span>
+<span id="cb101-53"><a href="#cb101-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-54"><a href="#cb101-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{r interface, echo=FALSE, out.width="100%", fig.align = 'center'}</span></span>
+<span id="cb101-55"><a href="#cb101-55" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(<span class="st">"images/rstudio.png"</span>)</span>
+<span id="cb101-56"><a href="#cb101-56" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-57"><a href="#cb101-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-58"><a href="#cb101-58" aria-hidden="true" tabindex="-1"></a>By default, you will see these panes:</span>
+<span id="cb101-59"><a href="#cb101-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-60"><a href="#cb101-60" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Editor**: This is were you usually code. You can open many different kinds of documents here. We will mostly be using Quarto documents (with a .`qmd` extension, **Q**uarto **M**ark**d**own), but you will see people use `.Rmd` (**R** **M**ark**d**own) or <span class="in">`.R`</span> (plain R code) files.</span>
+<span id="cb101-61"><a href="#cb101-61" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Console**: This is where the results appear once you execute your R-code. You can also directly type R-code into the console and execute it. This code does not get saved in your files, so better write in the *Editor*. When no code is executing, we see a <span class="in">`&gt;`</span> on the last line.</span>
+<span id="cb101-62"><a href="#cb101-62" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Environment, History, Connections, Git, Tutorial**: Two are relevant for us:</span>
+<span id="cb101-63"><a href="#cb101-63" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>In the **Environment** you have an overview over all the objects currently loaded in your environment (like datasets for example). You will learn more about objects later in the course.</span>
+<span id="cb101-64"><a href="#cb101-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-65"><a href="#cb101-65" aria-hidden="true" tabindex="-1"></a><span class="ss">    -   </span>In **Git** we will use version control and communicate to GitHub.</span>
+<span id="cb101-66"><a href="#cb101-66" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Files, Plots, Packages, Help, Viewer**: Plots and other things will appear here, don't worry too much about it for the moment.</span>
+<span id="cb101-67"><a href="#cb101-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-68"><a href="#cb101-68" aria-hidden="true" tabindex="-1"></a><span class="fu">## Working with Rstudio Projects</span></span>
+<span id="cb101-69"><a href="#cb101-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-70"><a href="#cb101-70" aria-hidden="true" tabindex="-1"></a>RStudio allows for a clean organisation of your work using *Projects*. If you have an Rstudio project associated with the folder, there will be a file there with extension `.RProj`. **Always open the `.RProj` file when opening the existing project, and not `.qmd` directly**. In general, you usually need to specify your working folder (aka directory) when working with such programs as R or Stata. This is where your files will be stored automatically and from where files will be loaded too. *Projects* simplifies this step by setting the working folder to its location. Moreover, our integration with `Git` will only work when you open the correct *Project.*</span>
+<span id="cb101-71"><a href="#cb101-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-72"><a href="#cb101-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## This Document</span></span>
+<span id="cb101-73"><a href="#cb101-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-74"><a href="#cb101-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### YAML</span></span>
+<span id="cb101-75"><a href="#cb101-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-76"><a href="#cb101-76" aria-hidden="true" tabindex="-1"></a>The top portion of this file (between the three dashed lines) is called **YAML** (/ˈjæməl/). It is a human-friendly data serialization standard for all programming languages. All you need to know is that this area is called the YAML (we will refer to it as such) and that it contains meta information about your document, such as the title, date, and the desired output format.</span>
+<span id="cb101-77"><a href="#cb101-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-78"><a href="#cb101-78" aria-hidden="true" tabindex="-1"></a><span class="fu">### Code chunks</span></span>
+<span id="cb101-79"><a href="#cb101-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-80"><a href="#cb101-80" aria-hidden="true" tabindex="-1"></a>With <span class="in">`qmd`</span>/<span class="in">`rmd`</span> files, you can write both text and code in the same file. You can insert new code chunks by clicking the green icon above or with a shortcuts: <span class="in">`Ctrl + Alt + I`</span>/<span class="in">`Cmd + Option + I`</span>. Here are some basic examples. By default, all these will be chunks for <span class="in">`R`</span> code, as <span class="in">`{r}`</span> in line 1 of the chunk tells us. Some additional information in that line like <span class="in">`{r, echo=FALSE, out.width="100%", fig.align = 'center'}`</span> in the chunk above specifies how and whether the code inside that chunk is evaluated and dictates how the output of this chunk looks like (e.g., the width of the image). You will learn these details gradually through the semester.</span>
+<span id="cb101-81"><a href="#cb101-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-82"><a href="#cb101-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### `R` as a Calculator</span></span>
+<span id="cb101-83"><a href="#cb101-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-86"><a href="#cb101-86" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-87"><a href="#cb101-87" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span> <span class="sc">+</span> <span class="dv">7</span> <span class="do">## R can be a calculator</span></span>
+<span id="cb101-88"><a href="#cb101-88" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-89"><a href="#cb101-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-92"><a href="#cb101-92" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-93"><a href="#cb101-93" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">-</span> <span class="dv">3</span></span>
+<span id="cb101-94"><a href="#cb101-94" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span> <span class="sc">*</span> <span class="dv">5</span></span>
+<span id="cb101-95"><a href="#cb101-95" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb101-96"><a href="#cb101-96" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span> <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb101-97"><a href="#cb101-97" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb101-98"><a href="#cb101-98" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-99"><a href="#cb101-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-100"><a href="#cb101-100" aria-hidden="true" tabindex="-1"></a>If you place parentheses correctly, <span class="in">`R`</span> incorporates the order of operations.</span>
+<span id="cb101-101"><a href="#cb101-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-104"><a href="#cb101-104" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-105"><a href="#cb101-105" aria-hidden="true" tabindex="-1"></a>((<span class="dv">1</span> <span class="sc">+</span> <span class="dv">2</span>) <span class="sc">*</span> <span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb101-106"><a href="#cb101-106" aria-hidden="true" tabindex="-1"></a><span class="co"># (3 * 2)^2</span></span>
+<span id="cb101-107"><a href="#cb101-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-108"><a href="#cb101-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-109"><a href="#cb101-109" aria-hidden="true" tabindex="-1"></a>You can also use other math *functions* you know from your calculator:</span>
+<span id="cb101-110"><a href="#cb101-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-113"><a href="#cb101-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-114"><a href="#cb101-114" aria-hidden="true" tabindex="-1"></a><span class="co"># square root function (aka command)</span></span>
+<span id="cb101-115"><a href="#cb101-115" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="at">x =</span> <span class="dv">2</span>) <span class="co"># x is an argument</span></span>
+<span id="cb101-116"><a href="#cb101-116" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="dv">2</span>) <span class="co"># also works without writing "x" explicitly</span></span>
+<span id="cb101-117"><a href="#cb101-117" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-118"><a href="#cb101-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-119"><a href="#cb101-119" aria-hidden="true" tabindex="-1"></a><span class="fu">### Comments</span></span>
+<span id="cb101-120"><a href="#cb101-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-121"><a href="#cb101-121" aria-hidden="true" tabindex="-1"></a>The chunks above contain not just the code but also *comments*, so the text that is not executed (evaluated by <span class="in">`R`</span>). You have two options for writing normal text in <span class="in">`qmd`</span>/<span class="in">`rmd`</span> files: as plain text (as this is written), and inside the chunk with comments (adding a hash symbol <span class="in">`#`</span> so that everything on that line after the <span class="in">`#`</span> gets commented out). Reserve comments for technical things and small notes, but if you need to write a sentence (like when answering questions in the problem sets for this class or actually writing a paper), use the Markdown part.</span>
+<span id="cb101-122"><a href="#cb101-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-123"><a href="#cb101-123" aria-hidden="true" tabindex="-1"></a>| **Word of advice:** don't be lazy, **use comments** even if you are not planning to share the code, you will thank yourself later. With comments, other people can better understand your code (say when I am grading your work or when you are working together on a problem set). But also, you can remember what you were doing when you come back to your code after some time (e.g., to prepare the final project at the end of the semester).</span>
+<span id="cb101-124"><a href="#cb101-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-125"><a href="#cb101-125" aria-hidden="true" tabindex="-1"></a>This is how you add a comment:</span>
+<span id="cb101-126"><a href="#cb101-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-129"><a href="#cb101-129" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-130"><a href="#cb101-130" aria-hidden="true" tabindex="-1"></a><span class="co"># this is a comment</span></span>
+<span id="cb101-131"><a href="#cb101-131" aria-hidden="true" tabindex="-1"></a><span class="do">## this is also a comment</span></span>
+<span id="cb101-132"><a href="#cb101-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-133"><a href="#cb101-133" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="dv">3</span>) <span class="co"># code in this line runs</span></span>
+<span id="cb101-134"><a href="#cb101-134" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 + 1 code here does not run</span></span>
+<span id="cb101-135"><a href="#cb101-135" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"three"</span>) <span class="co"># hashes do not cancel each other out # print(3)</span></span>
+<span id="cb101-136"><a href="#cb101-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-137"><a href="#cb101-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-138"><a href="#cb101-138" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Basics in R</span></span>
+<span id="cb101-139"><a href="#cb101-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-140"><a href="#cb101-140" aria-hidden="true" tabindex="-1"></a>Now let's actually store something in <span class="in">`R`</span>. This *something* will be called an **object**. Objects can contain information of different *data types*:</span>
+<span id="cb101-141"><a href="#cb101-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-142"><a href="#cb101-142" aria-hidden="true" tabindex="-1"></a>|               |               |                                              |</span>
+<span id="cb101-143"><a href="#cb101-143" aria-hidden="true" tabindex="-1"></a>|-------------------|-------------------|----------------------------------|</span>
+<span id="cb101-144"><a href="#cb101-144" aria-hidden="true" tabindex="-1"></a>| **Numeric**   | Numbers       | <span class="in">`c(1, 2.4, 3.14, 4)`</span>                         |</span>
+<span id="cb101-145"><a href="#cb101-145" aria-hidden="true" tabindex="-1"></a>| **Character** | Text          | <span class="in">`c("1", "blue", "fun", "monster")`</span>           |</span>
+<span id="cb101-146"><a href="#cb101-146" aria-hidden="true" tabindex="-1"></a>| **Logical**   | True or false | <span class="in">`c(TRUE, FALSE, TRUE, FALSE)`</span>                |</span>
+<span id="cb101-147"><a href="#cb101-147" aria-hidden="true" tabindex="-1"></a>| **Factor**    | Category      | <span class="in">`c("Strongly disagree", "Agree", "Neutral")`</span> |</span>
+<span id="cb101-148"><a href="#cb101-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-149"><a href="#cb101-149" aria-hidden="true" tabindex="-1"></a>We will start with the first three kinds, and add factors later during the semester.</span>
+<span id="cb101-150"><a href="#cb101-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-151"><a href="#cb101-151" aria-hidden="true" tabindex="-1"></a>Let's see an example:</span>
+<span id="cb101-152"><a href="#cb101-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-155"><a href="#cb101-155" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-156"><a href="#cb101-156" aria-hidden="true" tabindex="-1"></a><span class="co"># number of semesters you are in Mannheim</span></span>
+<span id="cb101-157"><a href="#cb101-157" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="dv">12</span></span>
+<span id="cb101-158"><a href="#cb101-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-159"><a href="#cb101-159" aria-hidden="true" tabindex="-1"></a><span class="co"># now we created an (numeric) object called "study_semester"</span></span>
+<span id="cb101-160"><a href="#cb101-160" aria-hidden="true" tabindex="-1"></a>study_semester</span>
+<span id="cb101-161"><a href="#cb101-161" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-162"><a href="#cb101-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-163"><a href="#cb101-163" aria-hidden="true" tabindex="-1"></a>Now you can see the object <span class="in">`study_semester`</span> in the *Environment* tab.</span>
+<span id="cb101-164"><a href="#cb101-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-165"><a href="#cb101-165" aria-hidden="true" tabindex="-1"></a>The <span class="in">`class()`</span> command lets us check the type of an object, so to understand the kind of information is in the object:</span>
+<span id="cb101-166"><a href="#cb101-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-169"><a href="#cb101-169" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-170"><a href="#cb101-170" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span>
+<span id="cb101-171"><a href="#cb101-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-172"><a href="#cb101-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-173"><a href="#cb101-173" aria-hidden="true" tabindex="-1"></a>We can also create objects of other kinds similarly:</span>
+<span id="cb101-174"><a href="#cb101-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-177"><a href="#cb101-177" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-178"><a href="#cb101-178" aria-hidden="true" tabindex="-1"></a>first_name <span class="ot">&lt;-</span> <span class="st">""</span> <span class="co"># this is a character object</span></span>
+<span id="cb101-179"><a href="#cb101-179" aria-hidden="true" tabindex="-1"></a>first_name</span>
+<span id="cb101-180"><a href="#cb101-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-181"><a href="#cb101-181" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(first_name)</span>
+<span id="cb101-182"><a href="#cb101-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-183"><a href="#cb101-183" aria-hidden="true" tabindex="-1"></a>last_name <span class="ot">&lt;-</span> <span class="st">""</span></span>
+<span id="cb101-184"><a href="#cb101-184" aria-hidden="true" tabindex="-1"></a>last_name</span>
+<span id="cb101-185"><a href="#cb101-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-186"><a href="#cb101-186" aria-hidden="true" tabindex="-1"></a>female <span class="ot">&lt;-</span> <span class="cn">TRUE</span> <span class="co"># this is a logical object</span></span>
+<span id="cb101-187"><a href="#cb101-187" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-188"><a href="#cb101-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-189"><a href="#cb101-189" aria-hidden="true" tabindex="-1"></a>We can also remove and overwrite objects:</span>
+<span id="cb101-190"><a href="#cb101-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-193"><a href="#cb101-193" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-194"><a href="#cb101-194" aria-hidden="true" tabindex="-1"></a><span class="co"># removes the object</span></span>
+<span id="cb101-195"><a href="#cb101-195" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(last_name)</span>
+<span id="cb101-196"><a href="#cb101-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-197"><a href="#cb101-197" aria-hidden="true" tabindex="-1"></a><span class="co"># assigning a new value overwrites the object</span></span>
+<span id="cb101-198"><a href="#cb101-198" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="st">"12"</span></span>
+<span id="cb101-199"><a href="#cb101-199" aria-hidden="true" tabindex="-1"></a>study_semester</span>
+<span id="cb101-200"><a href="#cb101-200" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span>
+<span id="cb101-201"><a href="#cb101-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-202"><a href="#cb101-202" aria-hidden="true" tabindex="-1"></a>study_semester <span class="ot">&lt;-</span> <span class="st">"twelve"</span></span>
+<span id="cb101-203"><a href="#cb101-203" aria-hidden="true" tabindex="-1"></a>study_semester</span>
+<span id="cb101-204"><a href="#cb101-204" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(study_semester)</span>
+<span id="cb101-205"><a href="#cb101-205" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-206"><a href="#cb101-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-207"><a href="#cb101-207" aria-hidden="true" tabindex="-1"></a>We will obviously not be working with a single value, but rather with many values stored in the same object all at once.</span>
+<span id="cb101-208"><a href="#cb101-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-209"><a href="#cb101-209" aria-hidden="true" tabindex="-1"></a>There are various kinds of *data structures* <span class="in">`R`</span> can handle. Here are some of them:</span>
+<span id="cb101-210"><a href="#cb101-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-211"><a href="#cb101-211" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Vector**: sets of scalars (i.e., 1+ of numbers, characters, logical)</span>
+<span id="cb101-212"><a href="#cb101-212" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Matrix**: two-dimensional set of scalars of *same* type</span>
+<span id="cb101-213"><a href="#cb101-213" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Data frame**: collections of vectors of (possibly) different types</span>
+<span id="cb101-214"><a href="#cb101-214" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Array**: multidimensional set of scalars of same type</span>
+<span id="cb101-215"><a href="#cb101-215" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**List**: combinations of scalars, vectors, matrices...</span>
+<span id="cb101-216"><a href="#cb101-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-217"><a href="#cb101-217" aria-hidden="true" tabindex="-1"></a>Here are some examples for each:</span>
+<span id="cb101-218"><a href="#cb101-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-221"><a href="#cb101-221" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-222"><a href="#cb101-222" aria-hidden="true" tabindex="-1"></a>vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">8</span>)</span>
+<span id="cb101-223"><a href="#cb101-223" aria-hidden="true" tabindex="-1"></a>vector</span>
+<span id="cb101-224"><a href="#cb101-224" aria-hidden="true" tabindex="-1"></a>another_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"one"</span>, <span class="st">"three"</span>, <span class="st">"eight"</span>)</span>
+<span id="cb101-225"><a href="#cb101-225" aria-hidden="true" tabindex="-1"></a>another_vector</span>
+<span id="cb101-226"><a href="#cb101-226" aria-hidden="true" tabindex="-1"></a>yet_another_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb101-227"><a href="#cb101-227" aria-hidden="true" tabindex="-1"></a>yet_another_vector</span>
+<span id="cb101-228"><a href="#cb101-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-229"><a href="#cb101-229" aria-hidden="true" tabindex="-1"></a><span class="co"># 2 by 2 matrix with numeric values</span></span>
+<span id="cb101-230"><a href="#cb101-230" aria-hidden="true" tabindex="-1"></a>matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb101-231"><a href="#cb101-231" aria-hidden="true" tabindex="-1"></a>matrix</span>
+<span id="cb101-232"><a href="#cb101-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-233"><a href="#cb101-233" aria-hidden="true" tabindex="-1"></a><span class="co"># combine the vectors from above into a data frame</span></span>
+<span id="cb101-234"><a href="#cb101-234" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(vector, another_vector, yet_another_vector)</span>
+<span id="cb101-235"><a href="#cb101-235" aria-hidden="true" tabindex="-1"></a>df</span>
+<span id="cb101-236"><a href="#cb101-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-237"><a href="#cb101-237" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also recode objects</span></span>
+<span id="cb101-238"><a href="#cb101-238" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(matrix)</span>
+<span id="cb101-239"><a href="#cb101-239" aria-hidden="true" tabindex="-1"></a>df</span>
+<span id="cb101-240"><a href="#cb101-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-241"><a href="#cb101-241" aria-hidden="true" tabindex="-1"></a><span class="co"># arrays are like stacked matrices</span></span>
+<span id="cb101-242"><a href="#cb101-242" aria-hidden="true" tabindex="-1"></a><span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span>
+<span id="cb101-243"><a href="#cb101-243" aria-hidden="true" tabindex="-1"></a><span class="fu">array</span>(<span class="at">data =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb101-244"><a href="#cb101-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-245"><a href="#cb101-245" aria-hidden="true" tabindex="-1"></a><span class="co"># lists can store various types of objects at once</span></span>
+<span id="cb101-246"><a href="#cb101-246" aria-hidden="true" tabindex="-1"></a>ls <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"5"</span>, vector, yet_another_vector, matrix)</span>
+<span id="cb101-247"><a href="#cb101-247" aria-hidden="true" tabindex="-1"></a>ls</span>
+<span id="cb101-248"><a href="#cb101-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-249"><a href="#cb101-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-250"><a href="#cb101-250" aria-hidden="true" tabindex="-1"></a>Since <span class="in">`R`</span> was created as a language for data analysis, it is very easy to work with *datasets*, which contain combinations of variables (think of variables as vectors). We will mostly be working with dataframes in this class.</span>
+<span id="cb101-251"><a href="#cb101-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-252"><a href="#cb101-252" aria-hidden="true" tabindex="-1"></a><span class="fu">## Working with a Dataset</span></span>
+<span id="cb101-253"><a href="#cb101-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-254"><a href="#cb101-254" aria-hidden="true" tabindex="-1"></a>Data usually needs to be loaded into R rather than entered by hand. <span class="in">`R`</span> can load multiple objects into the environment, which means it can load multiple datasets at once. Let's start with one.</span>
+<span id="cb101-255"><a href="#cb101-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-256"><a href="#cb101-256" aria-hidden="true" tabindex="-1"></a><span class="fu">### Loading a `csv` file</span></span>
+<span id="cb101-257"><a href="#cb101-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-258"><a href="#cb101-258" aria-hidden="true" tabindex="-1"></a>Let's take a look at the voting history of countries in the United Nations General Assembly. I have prepared the dataset for you and it is located in the <span class="in">`data`</span> subfolder of our project. Our dataset comes in a common format of *comma separated values* (extension `csv`). This means that values in a dataset are separated with a comma (and not a period or tab or something else) and system will detect columns based on these commas. There are different ways to load it, but we will be using a function from the `readr` package from *tidyverse* universe to load the dataset into the environment.</span>
+<span id="cb101-259"><a href="#cb101-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-260"><a href="#cb101-260" aria-hidden="true" tabindex="-1"></a>These are the steps you normally need to do when working with a function from an external package:</span>
+<span id="cb101-261"><a href="#cb101-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-264"><a href="#cb101-264" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-265"><a href="#cb101-265" aria-hidden="true" tabindex="-1"></a><span class="co"># install the package</span></span>
+<span id="cb101-266"><a href="#cb101-266" aria-hidden="true" tabindex="-1"></a><span class="co"># only needs to be done once on your machine</span></span>
+<span id="cb101-267"><a href="#cb101-267" aria-hidden="true" tabindex="-1"></a><span class="co"># better put all the installation stuff in the setup chunk</span></span>
+<span id="cb101-268"><a href="#cb101-268" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("readr")</span></span>
+<span id="cb101-269"><a href="#cb101-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-270"><a href="#cb101-270" aria-hidden="true" tabindex="-1"></a><span class="co"># load the package</span></span>
+<span id="cb101-271"><a href="#cb101-271" aria-hidden="true" tabindex="-1"></a><span class="co"># needs to be done every time you come back to working on the project</span></span>
+<span id="cb101-272"><a href="#cb101-272" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb101-273"><a href="#cb101-273" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-274"><a href="#cb101-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-275"><a href="#cb101-275" aria-hidden="true" tabindex="-1"></a>| **Advice:** use short but descriptive names for objects: e.g., <span class="in">`df`</span> is short but not descriptive, but <span class="in">`votes_from_un_general_assembly`</span> may be too long.</span>
+<span id="cb101-276"><a href="#cb101-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-277"><a href="#cb101-277" aria-hidden="true" tabindex="-1"></a>We also need to tell <span class="in">`R`</span> where to find the file. Here let's distinguish between relative and absolute file paths. An **absolute path** always contains the root element and the complete directory list required to locate the file. This is what people would call an absolute path to <span class="in">`dataset.csv`</span> object:</span>
+<span id="cb101-278"><a href="#cb101-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-279"><a href="#cb101-279" aria-hidden="true" tabindex="-1"></a><span class="in">``` verbatim</span></span>
+<span id="cb101-280"><a href="#cb101-280" aria-hidden="true" tabindex="-1"></a><span class="in">C:/Users/viktoriia/path/on/my-laptop/project-folder/data/dataset.csv</span></span>
+<span id="cb101-281"><a href="#cb101-281" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-282"><a href="#cb101-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-283"><a href="#cb101-283" aria-hidden="true" tabindex="-1"></a>These will differ across computers, so using absolute paths should be a no-go.</span>
+<span id="cb101-284"><a href="#cb101-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-285"><a href="#cb101-285" aria-hidden="true" tabindex="-1"></a>A **relative path** needs to be combined with another path in order to access a file. If we are located in the project folder, to access the same file <span class="in">`dataset.csv`</span> located in the <span class="in">`data`</span> subfolder in the project folder, we will need to write this:</span>
+<span id="cb101-286"><a href="#cb101-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-287"><a href="#cb101-287" aria-hidden="true" tabindex="-1"></a><span class="in">``` verbatim</span></span>
+<span id="cb101-288"><a href="#cb101-288" aria-hidden="true" tabindex="-1"></a><span class="in">data/dataset.csv</span></span>
+<span id="cb101-289"><a href="#cb101-289" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-290"><a href="#cb101-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-291"><a href="#cb101-291" aria-hidden="true" tabindex="-1"></a>Our loading of the file becomes very straightforward:</span>
+<span id="cb101-292"><a href="#cb101-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-295"><a href="#cb101-295" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-296"><a href="#cb101-296" aria-hidden="true" tabindex="-1"></a>un_votes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/un_votes.csv"</span>)</span>
+<span id="cb101-297"><a href="#cb101-297" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-298"><a href="#cb101-298" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-299"><a href="#cb101-299" aria-hidden="true" tabindex="-1"></a>| **Advice**: do not make <span class="in">`R`</span> print out full datasets (like in the chunk below).</span>
+<span id="cb101-300"><a href="#cb101-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-303"><a href="#cb101-303" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-304"><a href="#cb101-304" aria-hidden="true" tabindex="-1"></a>un_votes <span class="co"># don't do this</span></span>
+<span id="cb101-305"><a href="#cb101-305" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-306"><a href="#cb101-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-307"><a href="#cb101-307" aria-hidden="true" tabindex="-1"></a><span class="fu">### Viewing raw data</span></span>
+<span id="cb101-308"><a href="#cb101-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-309"><a href="#cb101-309" aria-hidden="true" tabindex="-1"></a>The first thing to do when loading the data would be to check that it loaded correctly. If it's a small dataset, you can just look at the raw data. You can view the dataset as a spreadsheet using the <span class="in">`View()`</span> function. Note that you **should not put this function in your `qmd` file**, but instead type it directly in the *Console*, as it pops open a new window (and the concept of popping open a window in a static document doesn't really make sense...). When you run this in the console, you'll see the following data viewer window pop up. Though most often looking at raw data won't be too helpful anyway.</span>
+<span id="cb101-310"><a href="#cb101-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-311"><a href="#cb101-311" aria-hidden="true" tabindex="-1"></a><span class="fu">### Learning about the dataset</span></span>
+<span id="cb101-312"><a href="#cb101-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-313"><a href="#cb101-313" aria-hidden="true" tabindex="-1"></a>Let's first check that there are columns and rows in the data:</span>
+<span id="cb101-314"><a href="#cb101-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-317"><a href="#cb101-317" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-318"><a href="#cb101-318" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(un_votes) <span class="co"># number of rows</span></span>
+<span id="cb101-319"><a href="#cb101-319" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(un_votes) <span class="co"># number of columns</span></span>
+<span id="cb101-320"><a href="#cb101-320" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(un_votes) <span class="co"># rows columns together (Roller Coaster)</span></span>
+<span id="cb101-321"><a href="#cb101-321" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-322"><a href="#cb101-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-323"><a href="#cb101-323" aria-hidden="true" tabindex="-1"></a>We may also now want to see the names of the variables, the columns:</span>
+<span id="cb101-324"><a href="#cb101-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-327"><a href="#cb101-327" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-328"><a href="#cb101-328" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(un_votes)</span>
+<span id="cb101-329"><a href="#cb101-329" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-330"><a href="#cb101-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-331"><a href="#cb101-331" aria-hidden="true" tabindex="-1"></a>We can use more than one function at once. Can you guess what <span class="in">`length`</span> command does here?</span>
+<span id="cb101-332"><a href="#cb101-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-335"><a href="#cb101-335" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-336"><a href="#cb101-336" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">colnames</span>(un_votes))</span>
+<span id="cb101-337"><a href="#cb101-337" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-338"><a href="#cb101-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-339"><a href="#cb101-339" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using pipes `%&gt;%`</span></span>
+<span id="cb101-340"><a href="#cb101-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-341"><a href="#cb101-341" aria-hidden="true" tabindex="-1"></a>A slightly more intuitive way to write the same thing would be with a *pipe* `%&gt;%`. This thing comes from *tidyverse* package, so you need to load it. When you will need to write long code with multiple functions applied step-by-step, it will become very straightforward to follow the steps if you use pipes.</span>
+<span id="cb101-342"><a href="#cb101-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-343"><a href="#cb101-343" aria-hidden="true" tabindex="-1"></a>*FYI:* Recently, <span class="in">`R`</span> has added their native pipe which looks like <span class="in">`|&gt;`</span>. You do not need any packages to use it, but for a number of reasons I will stick to the <span class="in">`tidyverse`</span> one (<span class="in">`%&gt;%`</span>) in this class. If that is what you are used to, you are welcome to use it instead.</span>
+<span id="cb101-344"><a href="#cb101-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-347"><a href="#cb101-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-348"><a href="#cb101-348" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(un_votes) <span class="sc">%&gt;%</span> <span class="co"># take the vector colnames(students)</span></span>
+<span id="cb101-349"><a href="#cb101-349" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>() <span class="co"># return the length of this vector</span></span>
+<span id="cb101-350"><a href="#cb101-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-351"><a href="#cb101-351" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the object students</span></span>
+<span id="cb101-352"><a href="#cb101-352" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>() <span class="sc">%&gt;%</span> <span class="co"># get column names vector</span></span>
+<span id="cb101-353"><a href="#cb101-353" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>() <span class="co"># return the length of this vector</span></span>
+<span id="cb101-354"><a href="#cb101-354" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-355"><a href="#cb101-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-356"><a href="#cb101-356" aria-hidden="true" tabindex="-1"></a><span class="fu">### Overview of the dataframe</span></span>
+<span id="cb101-357"><a href="#cb101-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-358"><a href="#cb101-358" aria-hidden="true" tabindex="-1"></a>There are multiple functions in <span class="in">`R`</span> that you can use to have a more detailed overlook of the data.</span>
+<span id="cb101-359"><a href="#cb101-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-360"><a href="#cb101-360" aria-hidden="true" tabindex="-1"></a>If you just want to look at the first/last few rows (observations), you can do it with <span class="in">`head`</span> or <span class="in">`tail`</span>. If you don't specify the number of rows you want to see with <span class="in">`n = 10`</span> argument, by default you will see six rows.</span>
+<span id="cb101-361"><a href="#cb101-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-364"><a href="#cb101-364" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-365"><a href="#cb101-365" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(un_votes)</span>
+<span id="cb101-366"><a href="#cb101-366" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(un_votes, <span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb101-367"><a href="#cb101-367" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-368"><a href="#cb101-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-369"><a href="#cb101-369" aria-hidden="true" tabindex="-1"></a>To have an overlook of the dataset variables with some descriptive statistics (for numeric variables), number of missing values, and class for non-numeric variables, we can use <span class="in">`summary`</span> command:</span>
+<span id="cb101-370"><a href="#cb101-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-373"><a href="#cb101-373" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-374"><a href="#cb101-374" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(un_votes)</span>
+<span id="cb101-375"><a href="#cb101-375" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-376"><a href="#cb101-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-377"><a href="#cb101-377" aria-hidden="true" tabindex="-1"></a>This is usually useful to make sure that the variables in the dataset were read correctly (e.g., the ones that you expect to be numeric, such as age, would actually be numeric).</span>
+<span id="cb101-378"><a href="#cb101-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-379"><a href="#cb101-379" aria-hidden="true" tabindex="-1"></a>Another command that produces much output at once would be <span class="in">`glimpse`</span> from <span class="in">`dplyr`</span>.</span>
+<span id="cb101-380"><a href="#cb101-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-383"><a href="#cb101-383" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-384"><a href="#cb101-384" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(un_votes)</span>
+<span id="cb101-385"><a href="#cb101-385" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-386"><a href="#cb101-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-387"><a href="#cb101-387" aria-hidden="true" tabindex="-1"></a>And lastly, one pretty useful function is <span class="in">`unique()`</span>, which allows us to see only the unique values in the vector/column of a dataset. Let's look at what issue areas we have in the dataset:</span>
+<span id="cb101-388"><a href="#cb101-388" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-391"><a href="#cb101-391" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-392"><a href="#cb101-392" aria-hidden="true" tabindex="-1"></a>un_votes<span class="sc">$</span>issue <span class="sc">%&gt;%</span></span>
+<span id="cb101-393"><a href="#cb101-393" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb101-394"><a href="#cb101-394" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-395"><a href="#cb101-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-396"><a href="#cb101-396" aria-hidden="true" tabindex="-1"></a>| How would you count the number of unique issue areas?</span>
+<span id="cb101-397"><a href="#cb101-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-400"><a href="#cb101-400" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-401"><a href="#cb101-401" aria-hidden="true" tabindex="-1"></a>un_votes<span class="sc">$</span>issue <span class="sc">%&gt;%</span></span>
+<span id="cb101-402"><a href="#cb101-402" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb101-403"><a href="#cb101-403" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-404"><a href="#cb101-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-405"><a href="#cb101-405" aria-hidden="true" tabindex="-1"></a><span class="fu">## First plots</span></span>
+<span id="cb101-406"><a href="#cb101-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-407"><a href="#cb101-407" aria-hidden="true" tabindex="-1"></a>Now let's move to the fun part--some data visualization! For now, I will tell you that we are using the package <span class="in">`ggplot2`</span> for building the plots. We will go through the process of creating a plot step-by-step next week, so for now you will need to just look at the anatomy and run the code in the chunk below.</span>
+<span id="cb101-408"><a href="#cb101-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-409"><a href="#cb101-409" aria-hidden="true" tabindex="-1"></a><span class="fu">### Share of "Yes"-votes</span></span>
+<span id="cb101-410"><a href="#cb101-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-413"><a href="#cb101-413" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-414"><a href="#cb101-414" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> un_votes, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> percent_yes)) <span class="sc">+</span></span>
+<span id="cb101-415"><a href="#cb101-415" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span>
+<span id="cb101-416"><a href="#cb101-416" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-417"><a href="#cb101-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-418"><a href="#cb101-418" aria-hidden="true" tabindex="-1"></a>| Can you rewrite the code from the chunk above but use a pipe?</span>
+<span id="cb101-419"><a href="#cb101-419" aria-hidden="true" tabindex="-1"></a>| Hint: <span class="in">`print(object)`</span> is the same as <span class="in">`object %&gt;% print()`</span> or <span class="in">`object %&gt;% print(.)`</span></span>
+<span id="cb101-420"><a href="#cb101-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-423"><a href="#cb101-423" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-424"><a href="#cb101-424" aria-hidden="true" tabindex="-1"></a><span class="co"># copypaste the code from above and try adjusting it!</span></span>
+<span id="cb101-425"><a href="#cb101-425" aria-hidden="true" tabindex="-1"></a><span class="co"># take the dataset</span></span>
+<span id="cb101-426"><a href="#cb101-426" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-427"><a href="#cb101-427" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-428"><a href="#cb101-428" aria-hidden="true" tabindex="-1"></a><span class="fu">### UN General Assembly Vote Trends</span></span>
+<span id="cb101-429"><a href="#cb101-429" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-430"><a href="#cb101-430" aria-hidden="true" tabindex="-1"></a>First, let's take a look at how often each country voted "yes" on a resolution in each year. We'll visualize the results, so let's pick a few countries of interest first.</span>
+<span id="cb101-431"><a href="#cb101-431" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-434"><a href="#cb101-434" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-435"><a href="#cb101-435" aria-hidden="true" tabindex="-1"></a>country_list <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"United States"</span>, <span class="st">"China"</span>, <span class="st">"Mexico"</span>, <span class="st">"Turkey"</span>)</span>
+<span id="cb101-436"><a href="#cb101-436" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-437"><a href="#cb101-437" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-438"><a href="#cb101-438" aria-hidden="true" tabindex="-1"></a>And let's only look at *Human Rights* votes for now.</span>
+<span id="cb101-439"><a href="#cb101-439" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-442"><a href="#cb101-442" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-443"><a href="#cb101-443" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the dataset</span></span>
+<span id="cb101-444"><a href="#cb101-444" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb101-445"><a href="#cb101-445" aria-hidden="true" tabindex="-1"></a>    country <span class="sc">%in%</span> country_list, <span class="co"># select rows for countries in from country_list</span></span>
+<span id="cb101-446"><a href="#cb101-446" aria-hidden="true" tabindex="-1"></a>    issue <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Human rights"</span>) <span class="co"># select cases for human rights votes</span></span>
+<span id="cb101-447"><a href="#cb101-447" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb101-448"><a href="#cb101-448" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> percent_yes, <span class="at">color =</span> country)) <span class="sc">+</span></span>
+<span id="cb101-449"><a href="#cb101-449" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb101-450"><a href="#cb101-450" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"% of votes that are 'Yes'"</span>) <span class="sc">+</span></span>
+<span id="cb101-451"><a href="#cb101-451" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="co"># change the appearance</span></span>
+<span id="cb101-452"><a href="#cb101-452" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>() <span class="sc">+</span> <span class="co"># change the color </span></span>
+<span id="cb101-453"><a href="#cb101-453" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="co"># change legend position</span></span>
+<span id="cb101-454"><a href="#cb101-454" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb101-455"><a href="#cb101-455" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-456"><a href="#cb101-456" aria-hidden="true" tabindex="-1"></a>Next, let's see how Italy and France's voting record changed over the years on each of the issues. Run the code below and look at the plot to find out what is depicted there.</span>
+<span id="cb101-457"><a href="#cb101-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-460"><a href="#cb101-460" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb101-461"><a href="#cb101-461" aria-hidden="true" tabindex="-1"></a>un_votes <span class="sc">%&gt;%</span> <span class="co"># take the dataset</span></span>
+<span id="cb101-462"><a href="#cb101-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb101-463"><a href="#cb101-463" aria-hidden="true" tabindex="-1"></a>    country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Italy"</span>, <span class="st">"France"</span>), <span class="co"># select the countries to work with</span></span>
+<span id="cb101-464"><a href="#cb101-464" aria-hidden="true" tabindex="-1"></a>    votes <span class="sc">&gt;</span> <span class="dv">5</span> <span class="co"># only use records where there are more than 5 votes</span></span>
+<span id="cb101-465"><a href="#cb101-465" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb101-466"><a href="#cb101-466" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb101-467"><a href="#cb101-467" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> year, <span class="co"># over horizontal axis</span></span>
+<span id="cb101-468"><a href="#cb101-468" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> percent_yes, <span class="co"># over vertical axis</span></span>
+<span id="cb101-469"><a href="#cb101-469" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> country</span>
+<span id="cb101-470"><a href="#cb101-470" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb101-471"><a href="#cb101-471" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="co"># add points</span></span>
+<span id="cb101-472"><a href="#cb101-472" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="co"># add trend line</span></span>
+<span id="cb101-473"><a href="#cb101-473" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>issue) <span class="sc">+</span> <span class="co"># split by issue</span></span>
+<span id="cb101-474"><a href="#cb101-474" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb101-475"><a href="#cb101-475" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Share of 'Yes' votes in the UN General Assembly"</span>,</span>
+<span id="cb101-476"><a href="#cb101-476" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"1946 to 2019"</span>,</span>
+<span id="cb101-477"><a href="#cb101-477" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"% Yes Votes"</span>,</span>
+<span id="cb101-478"><a href="#cb101-478" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb101-479"><a href="#cb101-479" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Country"</span></span>
+<span id="cb101-480"><a href="#cb101-480" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb101-481"><a href="#cb101-481" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="co"># change the appearance</span></span>
+<span id="cb101-482"><a href="#cb101-482" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_viridis_d</span>() <span class="sc">+</span> <span class="co"># change the color </span></span>
+<span id="cb101-483"><a href="#cb101-483" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="co"># change legend position</span></span>
+<span id="cb101-484"><a href="#cb101-484" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+</body></html>

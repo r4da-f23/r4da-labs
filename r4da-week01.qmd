@@ -23,12 +23,10 @@ highlight-style: github
 #| include: false
 # packages needed
 install.packages("tidyverse", repos = "http://cran.us.r-project.org")
-install.packages("DT", repos = "http://cran.us.r-project.org")
 
 # load the packages
 # only need to do this once in the
 library(tidyverse) 
-library(DT) # for interactive table 
 ```
 
 ```{r}
@@ -47,8 +45,7 @@ rstudioapi::writeRStudioPreference("auto_append_newline", TRUE)
 rstudioapi::writeRStudioPreference("soft_wrap_r_files", TRUE)
 ```
 
-\newpage 
-
+\newpage
 
 ## The RStudio interface
 
@@ -68,8 +65,7 @@ By default, you will see these panes:
 
 ## Working with Rstudio Projects
 
-RStudio allows for a clean organisation of your work using *Projects*. If you have an Rstudio project associated with the folder, there will be a file there with extension `.RProj`. **Always open the `.RProj` file when opening the existing project, and not `.qmd` directly**. In general, you usually need to specify your working folder (aka directory) when working with such programs as R or Stata. This is where your files will be stored automatically and from where files will be loaded too. *Projects* simplifies this step by setting the working folder to its location. Moreover, our integration with `Git` will only work when you open the correct *Project.*     
-
+RStudio allows for a clean organisation of your work using *Projects*. If you have an Rstudio project associated with the folder, there will be a file there with extension `.RProj`. **Always open the `.RProj` file when opening the existing project, and not `.qmd` directly**. In general, you usually need to specify your working folder (aka directory) when working with such programs as R or Stata. This is where your files will be stored automatically and from where files will be loaded too. *Projects* simplifies this step by setting the working folder to its location. Moreover, our integration with `Git` will only work when you open the correct *Project.*
 
 ## This Document
 
@@ -429,12 +425,4 @@ un_votes %>% # take the dataset
   theme_minimal() + # change the appearance
     scale_color_viridis_d() + # change the color 
   theme(legend.position = "top") # change legend position
-```
-
-```{r, eval=knitr::is_html_output()}
-un_votes %>%
-  arrange(country) %>%
-  select(country) %>%
-  distinct() %>%
-  datatable()
 ```
