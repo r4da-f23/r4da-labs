@@ -1,0 +1,602 @@
+---
+title: "Lab 2: Describing Variables"
+author: "Viktoriia Semenova"
+editor: visual
+date: "September 13, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean_names for datasets 
+  "modelsummary", # descriptive stats tables
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+```
+
+\newpage
+
+## Last Week
+
+-   *R universe*: `R`, RStudio, Quarto, `git`, GitHub
+-   Programming in `R` is object-oriented
+-   Quarto Markdown file (`qmd`) file anatomy
+
+## Working with a Dataset
+
+Data usually needs to be loaded into `R` rather than entered by hand. `R` can load multiple objects into the environment, which means it can load multiple datasets at once. Let's start with one.
+
+### Loading datasets
+
+Today we will have a look at the dataset Perceptions of Electoral Integrity.
+
+First, let's obtain the dataset. We will get it from the `Dataverse`. I have downloaded the [most recent version of the data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2MFQ9K) in `csv` format and it is located in the `data` subfolder of our `r4da-labs` project. Our dataset comes in a common format of *comma separated values* (extension `csv`). This means that columns in a dataset are separated with a comma and system will detect columns based on these commas. There are different ways to load it, but we will be using a function from the `readr` package from *tidyverse* universe to load the dataset into the environment. We already loaded `tidyverse` in teh setup chunk, so we carry on with loading the data right away:
+
+
+| Format  | Package  | Load Function  | Save Function |
+|---------|----------|----------------|---------------|
+| `.csv`  | `readr`  | `read_csv()`   | `write_csv()` |
+| `.xlsx` | `readxl` | `read_excel()` |               |
+| `.dta`  | `haven`  | `read_stata()` | `write_dta()` |
+| `.tsv`  | `readr`  | `read_tsv()`   | `write_tsv()` |
+| `.rda`  |          | `load()`       | `write()`     |
+| `.rds`  | `readr`  | `read_rds()`   | `write_rds()` |
+
+
+For the most of these formats, we will need to assign the content of the file into an object in the environment. 
+
+| **Advice:** use short but descriptive names for objects: e.g., `df` is short but not descriptive, but `PEI country-level data (PEI_9.0)` may be too long. `pei` will probably be the middle ground. 
+
+*Tab* allows for autocomplete of the name of the object. Once you have typed `""` and placed the mouse between the quotation marks, click on *Tab* and you can select the files available in that directory.   
+
+```{r}
+pei <- read_csv("data/PEI country-level data (PEI_9.0).csv")
+```
+### Exploring the Dataset
+
+```{r}
+glimpse(pei)
+# str(pei)
+```
+
+## Descriptive Statistics 
+
+### Range and Percentiles 
+
+```{r}
+pei$PEIIndexp %>% summary()
+pei$PEIIndexp %>% IQR(na.rm = T)
+min(pei$PEIIndexp) # returns NA
+max(pei$PEIIndexp) # returns NA
+```
+
+The `quantile()` function will be very handy later: it returns the values at particular percentiles of the distribution. To remind you, the 5th percentile distribution is the point below which 5% of the data falls. The 95th percentile is, similarly, the point below which 95% of the data falls. The 50th percentile, the median, splits the data into two separate, and equal, parts. The minimum is at the 0th percentile. The maximum is at the 100th percentile. In `quantile()`, the `probs` argument allows us to specify the percentile(s) we want. Two of the most important percentiles are the 2.5th and 97.5th because they define the 95% interval, a central range which includes 95% of the values. Let’s look at them.
+
+```{r}
+range(pei$PEIIndexp, na.rm = T)
+quantile(pei$PEIIndexp, probs = c(0.1, 0.5, 0.8), na.rm = T)
+```
+
+
+### Measures of Central Tendency 
+
+Statistics is pretty much about typical, i.e. *central*, behavior, i.e. *tendency* of the objects. Hence understanding the ways to calculate these averages underlies the idea of stats. 
+
+```{r}
+pei$PEIIndexp %>% mean()
+pei$PEIIndexp %>% mean(na.rm = T)
+```
+
+
+If the data are ordered from smallest to largest, the median is the observation right in the middle. If there are an even number of observations, there will be two values in the middle, and the median is taken as their average.
+
+```{r}
+pei$PEIIndexp %>% median(na.rm = T)
+```
+
+
+### Variance and Standard Deviation 
+
+The *variance* is the average squared distance from the mean. The *standard deviation* is the square root of the variance. The standard deviation is useful when considering how far the data are distributed from the mean.
+
+The standard deviation represents the typical deviation of observations from the mean. Usually about 70% of the data will be within one standard deviation of the mean and about 95% will be within two standard deviations. 
+
+```{r}
+pei$PEIIndexp %>% var(na.rm = T)
+pei$PEIIndexp %>% sd(na.rm = T)
+```
+
+**Practice: Writing Up Our Own Variance and SD calculations**
+
+$$
+s^2 = \frac{\sum_{i=1}^{N}(x_i - \bar{x})^2} {N - 1}
+$$
+
+```{r}
+#| label: variance by hand
+
+
+```
+
+
+## Visualization with `ggplot2`
+
+### Grammar of Graphics 
+
+Recall that we have multiple layers in the plots:
+
+-   *data*: the dataset containing the variables of interest.
+-   *aes*: aesthetic attributes of the geometric object. The most important are the names of the variables that should be on the x- and y-axes. Aesthetic attributes are mapped to variables in the dataset.
+-   *geom*: the geometric object to display, e.g., scatterplot, line, bar.
+
+```{r}
+#| label: ggplot-anatomy
+#| eval: false
+ggplot(data = [dataset],
+       mapping = aes(
+         x = [x - variable],
+         y = [y - variable]
+         )
+       ) +
+  geom_xxx() +
+  other options
+```
+
+
+### Distributions of Continuous Variables 
+#### Histograms
+
+Let's start with a *histogram*, a plot that visualizes the distribution of a *continuous* numerical variable. 
+
+We first cut up the x-axis into a series of bins, where each bin represents a range of values. For each bin, we count the number of observations that fall in the range corresponding to that bin. We draw a bar whose height indicates the corresponding count.
+
+```{r}
+#| label: ggplot-layers
+#| fig-keep: all
+ggplot()
+ggplot(data = pei)
+ggplot(
+  data = pei,
+  mapping = aes(x = PEIIndexp)
+)
+```
+
+> ❓ Why is the vertical axis still empty?
+
+
+```{r}
+#| label: ggplot-default-histogram
+ggplot(
+  data = pei,
+  mapping = aes(x = PEIIndexp)
+) +
+  geom_histogram()
+```
+
+Note the message printed above:
+
+|  `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+The message is telling us that the histogram was constructed using `bins = 30` for 30 equally spaced bins. This is the default value. Unless you override this default number of bins with a number you specify, `R` will choose 30 by default. Because this is an important aspect of making a histogram, `R` insists on informing you with this message. You make this message go away by specifying the bin number yourself, as you should *always* do.
+
+```{r}
+#| label: ggplot-better-histogram
+ggplot(
+  data = pei,
+  mapping = aes(x = PEIIndexp)
+) +
+  geom_histogram(
+    bins = 50, # number of bins
+    boundary = 40 # there is a cutoff at 40 (for interpretation)
+  )
+```
+
+Now let's also work on presentation and the graphic design part and make it *more aesthetically appealing* and *more reader-friendly*.
+
+> ❓ What could we do  to make the plot more informative?
+
+```{r}
+ggplot(
+  data = pei,
+  mapping = aes(x = PEIIndexp)
+) +
+  geom_histogram(
+    binwidth = 2, # each bin represents 2 points in PEI score
+    boundary = 40, # there is a cutoff at 40, a round number 
+    fill = "blue4",
+    color = "white" # changes color for borders
+  ) +
+  xlim(0, 100) + # set the X axis to show all plausible values 
+  labs(
+    title = "Distribution of the PEI Index of Electoral Integrity",
+    subtitle = "Worldwide in 2022",
+    caption = "Data source: PEI (2023)",
+    x = "Index of Electoral Integrity",
+    y = "Count"
+  ) +
+  theme_minimal() # removes grey background for cleaner look
+```
+
+**Interpretation**
+Histograms provide a view of the data density. Higher bars represent where the data are relatively more common. Histograms are especially convenient for understanding the shape of the data distribution. When data trail off to the right and has a longer right tail, the shape is said
+to be **right skewed**. Data sets with the reverse characteristic – a long, thinner tail to the left – are said to be **left skewed**. We also say that such a distribution has a long left tail. Data sets that show roughly equal trailing off in both directions are called **symmetric**.
+
+
+#### Density Plots
+
+Let's try out a different `geom` for numeric data: density plots. Unlike a histogram, density plot shows us the distribution as a single line and not as bins. Both of these visualizations work well for continuous variables. Here we can also see that `ggplot2` objects (i.e. the output of `ggplot()` function) can be stored in the environment and layers can be added at different stages. 
+
+```{r}
+#| label: ggplot-density
+pei_density <- ggplot(data = pei,
+                      mapping = aes(x = PEIIndexp)) +
+  geom_density()
+pei_density
+```
+
+An important argument in this geom is `adjust =`. Let's see how different values of this argument impact the curve:
+
+```{r}
+pei_density +
+  geom_density(adjust = 0.2, color = "red") +
+  geom_density(adjust = 2, color = "blue") 
+```
+
+We can also use color as a grouping variable and have it in the mapping part of the plot. `color` and `fill` are the two useful aesthetics here:
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_density(aes(color = region))
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_density(aes(color = region, fill = region), alpha = 0.3)
+```
+
+It is also often a good idea to add the actual observations when we are using density plots:
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_density(fill = "gray") +
+  geom_rug()
+```
+
+
+#### Boxplots and Violin Plots
+
+```{r}
+#| layout-ncol: 3
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot() 
+  # theme(axis.ticks.y = element_blank(),
+  #       axis.text.y = element_blank())
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin()
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin(alpha = 0.5) +
+  geom_boxplot(alpha = 0.5, width = 0.5) 
+```
+
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin(alpha = 0.5) +
+  geom_boxplot(alpha = 0.5, width = 0.5) +
+  geom_jitter()
+```
+
+
+### Distributions of Discrete (Numeric) and Categorial Variables 
+
+#### Barplot 
+
+`geom_bar()` visualizes the distribution of a categorical or discrete variable. This is a simpler task than creating a histogram, as we are simply counting different categories within a categorical variable, also known as the levels of the categorical variable. Often the best way to visualize these different counts, also known as frequencies, is with a barplot.
+
+Let's recode the variable `region` to be more readable and visualize the counts: 
+
+```{r}
+pei <- pei %>%
+  mutate(
+    region = case_when(
+      region == 1 ~ "Africa",
+      region == 2 ~ "Americas",
+      region == 3 ~ "Asia",
+      region == 4 ~ "Europe",
+      region == 5 ~ "Oceania"
+    )
+  ) 
+count(pei, region)
+```
+
+In bar plots of categorical variables with non-ordered levels, like the penguin species above, it’s often preferable to reorder the bars based on their frequencies. Doing so requires transforming the variable to a factor (how `R` handles categorical data) and then reordering the levels of that factor. Below you can find both versons of bar plots: 
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = region)) +
+  geom_bar() 
+
+ggplot(data = pei,
+       mapping = aes(x = forcats::fct_infreq(region))) +
+  geom_bar() 
+```
+
+##### Category Ordering 
+
+We can also choose to show the bars horizontally rather than vertically by setting a different axis for `region`:
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(y = region %>% fct_infreq())) + 
+  geom_bar()
+
+ggplot(data = pei,
+       mapping = aes(y = region %>% fct_infreq() %>% fct_rev())) + 
+  geom_bar() 
+```
+
+##### Proportions vs. Counts
+
+There is also a way to show proportions, rather than counts, on the vertical axis... By default, `ggplot` creates one group per each bar, so all the proportions are set to 1 (on the left).
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = region,
+                     y = ..prop..)) +
+  geom_bar() +
+  scale_y_continuous(labels = scales::percent_format())
+
+ggplot(data = pei,
+       mapping = aes(x = region,
+                     y = ..prop..,
+                     group = 1)) +
+  geom_bar() +
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+---
+
+Similar to categorical variables, we plot discrete numeric variables with this geom. According to the codebook, `rating` variable is the rating of electoral integrity (1=very poor, 10=very good). 
+
+```{r}
+# bar chart 
+ggplot(data = pei,
+       mapping = aes(x = rating)) +
+  geom_bar() 
+
+# better labels 
+ggplot(data = pei,
+       mapping = aes(x = factor(rating))) +
+  geom_bar()   
+
+# wrong geom for the task 
+ggplot(data = pei,
+       mapping = aes(x = (rating))) +
+  geom_histogram(binwidth = 1)   
+```
+
+
+
+### Important Nuances 
+
+#### Order of Layers Matters
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_boxplot() +
+  geom_violin()
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin() +
+  geom_boxplot() 
+```
+
+
+#### Global vs. Local Mapping
+
+The plots below illustrate the differences between setting mappings globally, i.e. in `ggplot(aes(...))` layer and locally, i.e. in `geom_` layers. 
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_boxplot() +
+  geom_violin()
+
+ggplot(data = pei, aes(x = PEIIndexp)) +
+  geom_boxplot() +
+  geom_violin(aes(y = 1))
+
+ggplot(data = pei)  +
+  geom_boxplot(aes(x = PEIIndexp)) +
+  geom_violin(aes(x = PEIIndexp, y = 1))
+```
+
+
+```{r}
+#| eval: false
+## how can we make them overlapping, without setting y globally?
+ggplot(data = pei)  +
+  geom_violin(aes(x = PEIIndexp)) +
+  geom_boxplot(aes(x = PEIIndexp)) 
+```
+
+#### Setting vs. Mapping
+
+So far, we have primarily been using color with no substantive purpose: we were *setting* it to a particular value. Yet we can use color in mappings, too.
+- We *map* variables to aesthetics (e.g. color/fill or shape) if we want the visual attribute represented by that aesthetic to vary based on the values of that *variable*. This goes inside `aes()`. 
+- Otherwise, we *set* the value of an aesthetic. The choice of this value is on us. This goes into `geom_`. 
+
+```{r}
+#| layout-ncol: 3
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region))) +
+  scale_color_viridis_d()
+
+# setting can overwrite the mapping 
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region)), color = "red") 
+
+# mixing up setting and mapping 
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = "red"))
+```
+
+## Saving Plot Objects 
+
+Plots are `R` objects, just like vectors or data frames. We can create them, print them and save them. Up until now, we have just made them in an `R` code chunk. That is what most often you will be doing when working with Quarto. Sometimes, however, it is handy to work with a plot object.
+
+```{r}
+my_plot <- ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region))) +
+  scale_color_viridis_d()
+```
+
+This code above does not print anything out. In order to make this plot appear, we need to print it out explicitly. Recall that typing the name of an object is the same thing as using `print()`. Now that we have this object, we can display it whenever we want.
+
+```{r}
+my_plot
+```
+
+But, sometimes, we want a permanent copy of the plot outside of `R`, saved to our computer. That is the purpose of `ggsave()`:
+
+```{r}
+ggsave(
+  filename = "figures/pei_plot.png",
+  plot = my_plot
+)
+```
+
+
+We can then include it into `qmd` files as an external image like this:
+
+```{r}
+knitr::include_graphics(path = "figures/pei_plot.png")
+```
+
+
+## Practice 
+
+Pick a variable or two and make an informative plot depicting that variable's distribution. Use as many geoms as possible. 
+
+<!-- insert a code chunk -->
+<!-- pick a variable  -->
+<!-- make a plot  -->
+<!-- describe what you see -->
+
+## Extra Stuff 
+
+### Default Theme for the Document 
+
+It is good practice to keep the formatting of your plots uniform across the document (article, term paper, blog post...) unless your goal is to showcase design features of course. So either try to use the same theme across the document or set certain values to these arguments for the entire document. You will try out this approach in your problem set.
+
+```{r}
+# set theme for ggplot2 
+# best put this into setup chunk after you have loaded the packages 
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+
+### Lollipop Plot for Categorical Data 
+
+There is a principle in data viz, which is commonly referred as *Data-to-ink ratio*:
+
+> Graphical excellence is the well-designed presentation of interesting data---a matter of substance, of statistics, and of design ... \[It\] consists of complex ideas communicated with clarity, precision, and efficiency. ... \[It\] is that which gives to the viewer the greatest number of ideas in the shortest time with the least ink in the smallest space ... \[It\] is nearly always multivariate ... And graphical excellence requires telling the truth about the data..
+
+Since the ends of the bars are often the most important part of the graph when we are talking about the counts, we can use a point or lollipop chart to emphasize them. We'll keep all the same code from our bar chart and make a few changes. Let's recreate a bar chart first (this time with a different `geom`):
+
+```{r}
+pei %>% # take dataset
+  group_by(region) %>% # group by region
+  summarise(count = n()) %>%
+   ggplot(aes(
+    x = region,
+    y = count
+  )) + 
+  geom_col()
+```
+
+And now switch to the extreme example of low ink-to-data ration. It would be just the points for the category counts:
+
+```{r}
+# from the codebook 
+# In PEI: Africa = 1; Americas = 2 ; Asia = 3 ; Europe = 4 ; Oceania = 5
+pei %>% # take dataset
+  group_by(region) %>% # group by region
+  summarise(count = n()) %>% # calculate the count by region
+  ggplot(aes(
+    x = region,
+    y = count
+  )) +
+  geom_point(size = 3) 
+```
+
+This may be a little too extreme, we let's also add the lines to teh point. Such _lollipop plots_ minimize the ratio and are thus sometimes preferred. It combines two geoms - the lines (segments) and the points on top of them. 
+
+```{r}
+pei %>% # take dataset
+  group_by(region) %>% # group by region
+  summarise(count = n()) %>% # calculate the count by region
+  ggplot(aes(
+    x = region,
+    y = count
+  )) +
+  geom_point(size = 3) +
+  geom_segment(
+    aes(
+      y = 0, yend = count,
+      x = region, xend = region
+    )
+  )
+```
+
+
+
+
+## Resources 
+
+- Chapter 2 **Data visualization** in <https://r4ds.hadley.nz/data-visualize>: overview of `ggplot2` basics 
+- Week 02 videos from this playlist: <https://youtube.com/playlist?list=PLNUVZZ6hfXX1tyUykCWShOKZdIB0TIhtM&si=jp5q61UTGIIAX4uu>: gentle intro to `ggplot2` 
