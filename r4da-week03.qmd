@@ -1,0 +1,731 @@
+---
+title: "Lab 3: Describing Relationships"
+author: "Viktoriia Semenova"
+editor: visual
+date: "September 20, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "haven", # for reading dta files 
+  "janitor", # clean_names for datasets 
+  "modelsummary", # descriptive stats tables
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+\newpage
+
+## Last Week
+
+-   Introduction to `ggplot2` package for data visualization 
+-   Grammar of graphics 
+-   Descriptive statistics 
+
+
+## Leftovers from Last Time 
+
+```{r}
+pei <- haven::read_dta("data/PEI country-level data (PEI_9.0).dta")
+```
+
+### Grammar of Graphics
+
+Recall that we have multiple layers in the plots:
+
+-   *data*: the dataset containing the variables of interest.
+-   *aes*: aesthetic attributes of the geometric object. The most important are the names of the variables that should be on the x- and y-axes. Aesthetic attributes are mapped to variables in the dataset.
+-   *geom*: the geometric object to display, e.g., scatterplot, line, bar.
+
+```{r}
+#| label: ggplot-anatomy
+#| eval: false
+ggplot(data = [dataset],
+       mapping = aes(
+         x = [x - variable],
+         y = [y - variable]
+         )
+       ) +
+  geom_xxx() +
+  other options
+```
+
+### Distributions of Continuous Variables
+
+#### Boxplot, Violin Plot, and Observations Layers Combined 
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin(alpha = 0.5) +
+  geom_boxplot(alpha = 0.5, width = 0.5) +
+  geom_jitter() # adds points with a little random noise (i.e. tiny shifts on both x and y coordinates)
+```
+
+### Distributions of Discrete and Categorial Variables
+
+#### Barplot
+
+`geom_bar()` visualizes the distribution of a categorical or discrete variable. This is a simpler task than creating a histogram, as we are simply counting different categories within a categorical variable, also known as the levels of the categorical variable. Often the best way to visualize these different counts, also known as frequencies, is with a barplot.
+
+Let's recode the variable `region` to be more readable and visualize the counts:
+
+```{r}
+pei <- pei %>%
+  mutate(
+    region = case_when(
+      region == 1 ~ "Africa",
+      region == 2 ~ "Americas",
+      region == 3 ~ "Asia",
+      region == 4 ~ "Europe",
+      region == 5 ~ "Oceania"
+    )
+  ) 
+count(pei, region)
+```
+
+In bar plots of categorical variables with non-ordered levels, it's often preferable to reorder the bars based on their frequencies. Doing so requires transforming the variable to a factor (how `R` handles categorical data) and then reordering the levels of that factor. Below you can find both versions of bar plots:
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = region)) +
+  geom_bar() 
+
+ggplot(data = pei,
+       mapping = aes(x = forcats::fct_infreq(region))) +
+  geom_bar() 
+```
+
+##### Category Ordering
+
+We can also choose to show the bars horizontally rather than vertically by setting a different axis for `region`:
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(y = region %>% fct_infreq())) + 
+  geom_bar()
+
+ggplot(data = pei,
+       mapping = aes(y = region %>% 
+                       fct_infreq() %>% # order in frequency
+                       fct_rev() # reverse the order 
+                     )) + 
+  geom_bar() 
+```
+
+##### Proportions vs. Counts
+
+There is also a way to show proportions, rather than counts, on the vertical axis... (we can always explicitly calculate these quantities and plot them of course). By default, `ggplot` creates one group per each bar, so all the proportions are set to 1 (on the left). 
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = region,
+                     y = ..prop..)) +
+  geom_bar() +
+  scale_y_continuous(labels = scales::percent_format())
+
+ggplot(data = pei,
+       mapping = aes(x = region,
+                     y = ..prop..,
+                     group = 1)) +
+  geom_bar() +
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+
+### Important Nuances
+
+#### Order of Layers Matters
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_boxplot() +
+  geom_violin()
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_violin() +
+  geom_boxplot() 
+```
+
+#### Global vs. Local Mapping
+
+The plots below illustrate the differences between setting mappings globally, i.e. in `ggplot(aes(...))` layer and locally, i.e. in `geom_` layers. 
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp, y = 1)) +
+  geom_boxplot() +
+  geom_violin()
+
+ggplot(data = pei, aes(x = PEIIndexp)) +
+  geom_boxplot() +
+  geom_violin(aes(y = 1))
+
+ggplot(data = pei)  +
+  geom_boxplot(aes(x = PEIIndexp)) +
+  geom_violin(aes(x = PEIIndexp, y = 1))
+```
+
+While it is often more efficient to set the aesthetics globally, sometimes you may want to show related but different quantities on the plot, so setting aesthetics locally becomes necessary.
+
+#### Setting vs. Mapping
+
+So far, we have primarily been using color with no substantive purpose: we were *setting* it to a particular value. Yet we can use color in mappings, too. - We *map* variables to aesthetics (e.g. color/fill or shape) if we want the visual attribute represented by that aesthetic to vary based on the values of that *variable*. This goes inside `aes()`. - Otherwise, we *set* the value of an aesthetic. The choice of this value is on us. This goes into `geom_`.
+
+```{r}
+#| layout-ncol: 3
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region))) +
+  scale_color_viridis_d()
+
+# setting can overwrite the mapping 
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region)), color = "red") 
+
+# mixing up setting and mapping 
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = "red"))
+```
+
+### Saving Plot Objects
+
+Plots are `R` objects, just like vectors or data frames. We can create them, print them and save them. Up until now, we have just made them in an `R` code chunk. That is what most often you will be doing when working with Quarto. Sometimes, however, it is handy to work with a plot object.
+
+```{r}
+my_plot <- ggplot(data = pei,
+       mapping = aes(x = PEIIndexp)) +
+  geom_boxplot(aes(color = factor(region))) +
+  scale_color_viridis_d()
+```
+
+This code above does not print anything out. In order to make this plot appear, we need to print it out explicitly. Recall that typing the name of an object is the same thing as using `print()`. Now that we have this object, we can display it whenever we want.
+
+```{r}
+my_plot
+```
+
+But, sometimes, we want a permanent copy of the plot outside of `R`, saved to our computer. That is the purpose of `ggsave()`:
+
+```{r}
+ggsave(
+  filename = "figures/pei_plot.png",
+  plot = my_plot
+)
+```
+
+We can then include it into `qmd` files as an external image like this:
+
+```{r}
+knitr::include_graphics(path = "figures/pei_plot.png")
+```
+
+
+
+## Plotting Two or More Variables 
+
+### Two Variables: Continuous 
+
+*Scatterplots*, also called bivariate plots, allow you to visualize the relationship between two numerical variables. The most appropriate `geom` for that is usually `geom_point()`:
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = gdp_pc_ppp)) +
+  geom_point() # plots the observations
+```
+
+Let's break down this code, piece-by-piece.
+
+-   The data argument is set to trains via `data = pei`.
+-   The aesthetic mapping is set via `mapping = aes(x = PEIIndexi, y = gdp_pc_ppp)`. Here, we map `PEIIndexi` to the x axis and `gdp_pc_ppp` to the `y` axis.
+-   The geometric object is specified using `geom_point()`, telling `R` we want a scatterplot. We added a layer using the `+` sign.
+
+`geom_point` works fine on its own if we don't have _too_ many observations and when there are many distinct values in the variables we plot.
+
+#### `geom_smooth`
+
+```{r}
+#| layout-ncol: 2
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = gdp_pc_ppp)) +
+  geom_point() + # plots the observations 
+  geom_smooth(method = 'loess', formula = 'y ~ x',  se = FALSE)
+
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = gdp_pc_ppp)) +
+  geom_point() + # plots the observations 
+  geom_smooth(method = 'lm', formula = 'y ~ x',  se = FALSE)
+```
+When needed, transformations to variables can applied directly in the mapping (these changes will not be saved in the dataset). 
+
+```{r}
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = log(gdp_pc_ppp))) +
+  geom_point() + # plots the observations 
+  geom_smooth(method = 'lm', formula = 'y ~ x',  se = FALSE)
+```
+
+### Three Variables: Two Continuous + Categorical 
+
+```{r}
+#| layout-ncol: 2
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = PEIIndexi,
+    x = gdp_pc_ppp,
+    color = region # add color by region 
+  )
+) +
+  geom_point() +
+  scale_x_continuous(labels = scales::dollar_format()) 
+
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = PEIIndexi,
+    x = gdp_pc_ppp,
+    color = region  # add color by region 
+  )
+) +
+  geom_point() +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  scale_color_viridis_d() # make colors colorblind-friendly
+```
+
+
+### Two Variables: Continous and Categorical 
+
+Let's consider a few options for plotting such combinations of variables: 
+
+```{r}
+#| layout-ncol: 3
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = region)) +
+  geom_point() 
+
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = region)) +
+  geom_jitter(width = 0.1) 
+
+
+ggplot(data = pei,
+       mapping = aes(y = PEIIndexi,
+                     x = region)) +
+  geom_boxplot() 
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexi,
+                     group = region)) +
+  geom_density() 
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexi,
+                     color = region,
+                     fill = region)) +
+  geom_density(alpha = 0.3) 
+
+ggplot(data = pei,
+       mapping = aes(x = PEIIndexi)) +
+  geom_density(alpha = 0.3) +
+  facet_wrap(vars(region))
+```
+
+
+### Two Categorical Variables 
+
+```{r}
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = oecd,
+    x = region
+  )
+) +
+  geom_jitter(width = 0.1)
+
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = factor(oecd),
+    x = region
+  )
+) +
+  geom_jitter(width = 0.1)
+
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = factor(oecd),
+    x = region
+  )
+) +
+  geom_count()
+
+ggplot(pei, aes(
+  x = region,
+  fill = factor(oecd)
+)) +
+  geom_bar()
+
+ggplot(pei, aes(
+  x = region,
+  fill = factor(oecd)
+)) +
+  geom_bar(position = "dodge")
+```
+
+
+
+## Basic Data Wrangling Functions 
+
+We can't use all the beautiful plots until we have "wrangled" the data into a convenient shape and have all the variables we need for plotting. You have seen some of these functions already, but let's now look at them a bit more systematically. Key wrangling functions include:
+
+-   `filter()`: to pick out the *rows* we want to keep from a tibble.
+
+-   `select()`: to pick out the *columns* we want to keep from a tibble.
+
+-   `arrange()`: to sort the rows in a tibble, in either ascending or descending order.
+
+-   `mutate()`: to create new columns.
+
+-   `summarize()`: to create a new tibble comprised of summary statistics for one (or more) rows, depending on the use of the `.by` argument.
+
+### The pipe operator: `%>%` (again)
+
+The pipe operator (`%>%`) allows us to combine multiple operations in `R` into a single sequential *chain* of actions. Much like how the `+` sign has to come at the end of the line when constructing plots --- because we are building the plot layer-by-layer --- the pipe operator `%>%` has to come at the end of the line because we are building a data wrangling pipeline step-by-step. If you do not include the pipe operator, R assumes the next line of code is unrelated to the layers you built and you will get an error.
+
+
+### `filter` rows  
+
+The `filter()` function works much like the "Filter" option in Microsoft Excel. It allows you to specify criteria about the values of a variable in your dataset and then selects only the rows that match that criteria.
+
+```{r}
+# only Europe (show, not store in the environment)
+pei %>% 
+  filter(region == "Europe")
+```
+
+Here are a few more operators that we can use here:
+
+-   `>` for "greater than"
+-   `<` for "less than"
+-   `>=` for "greater than or equal to"
+-   `<=` for "less than or equal to"
+-   `!=` for "not equal to"
+-   `%in%` for "inside"
+
+```{r}
+# everything but Europe (show, not store in the environment)
+pei %>% 
+  filter(region != "Europe")
+
+# every row where PEI index is ABOVE 50
+pei %>% 
+  filter(PEIIndexi > 55)
+
+# every row where PEI type is ABOVE 3
+pei %>% 
+  filter(PEItype > 3)
+
+# every row where PEI index is EQUAL TO or ABOVE 50
+pei %>% 
+  filter(PEIIndexi >= 55)
+
+# every row where PEI type is EQUAL TO or ABOVE 3
+pei %>% 
+  filter(PEItype >= 3)
+```
+
+Furthermore, you can combine multiple criteria using operators that make comparisons:
+
+-   `|` for "or"
+-   `&` for "and" (or just `,`)
+-   `!` for "not"
+
+```{r}
+# every row where PEI type is EQUAL TO or ABOVE 3
+pei %>%
+  filter(
+    PEItype <= 3,
+    region == "Europe"
+  )
+
+# select every observation that is in Europe or Asia, has PEI index above 50, and GDP above average 
+pei %>%
+  filter(
+    PEIIndexi > 50,
+    region == "Europe" | region == "Asia",
+    gdp_pc_ppp > mean(gdp_pc_ppp, na.rm = T)
+  )
+
+# same result but %in% instead or OR (|) for regions  
+pei %>%
+  filter(
+    PEIIndexi > 50,
+    region %in% c("Europe", "Asia"),
+    gdp_pc_ppp > mean(gdp_pc_ppp, na.rm = T)
+  )
+
+
+# select every observation that is in not in Europe nor Asia, has PEI index above or equal to 40, and GDP above median 
+
+
+
+
+```
+
+### `select` variables
+
+This is used for subsetting variables (columns, not rows), deleting columns, and re-arranging columns. 
+
+```{r}
+# select PEIIndexi and ISO variables only 
+pei %>%
+  select(PEIIndexi, ISO)
+
+# remove ISO and y2012 variables 
+pei %>%
+  select(-ISO, -y2012)
+
+# change the order of columns in dataset 
+pei %>%
+  relocate(PEIIndexi)
+
+# change the order of columns in dataset 
+pei %>%
+  select(ISO, PEIIndexi, everything())
+
+# only select variables starting with "y"
+pei %>% 
+  select(starts_with("y"))
+```
+
+### `mutate` variables
+
+`mutate()` takes existing columns and creates a new column or overwrites the existing one. Here we will recode the variable `gdp_pc_ppp` to be in 1000 USD (we use `select()` at the start of the pipe so that it is easier to see the new and old variables at the same time).
+
+
+```{r}
+pei %>% 
+  select(ISO, gdp_pc_ppp) %>% 
+  mutate(gdp_pc_ppp_1000 = gdp_pc_ppp / 1000)
+```
+
+Here is how we can remove remove variables with `mutate()` (although the same can be done with `select()` command):
+
+```{r}
+pei %>% 
+  select(ISO, gdp_pc_ppp) %>% 
+  mutate(gdp_pc_ppp = NULL)
+```
+
+
+Let's do something a little more complex and create a variable `gdp_outlier` that shows whether the observation for `gdp_pc_ppp` is an outlier:
+
+```{r}
+pei <- pei %>% 
+  mutate(gdp_outlier_l = gdp_pc_ppp < quantile(gdp_pc_ppp, 0.25, na.rm = T) - 1.5 * IQR(gdp_pc_ppp, na.rm = T),
+         gdp_outlier_u = gdp_pc_ppp > quantile(gdp_pc_ppp, 0.75, na.rm = T) + 1.5 * IQR(gdp_pc_ppp, na.rm = T),
+         gdp_outlier = gdp_outlier_u | gdp_outlier_u == TRUE,
+         gdp_outlier_l = NULL, # remove the intermediate variables 
+         gdp_outlier_u = NULL # remove the intermediate variables 
+         )
+```
+
+And you have already seen this function when we renamed the regions above:
+
+```{r}
+#| eval: false
+pei <- pei %>%
+  mutate(
+    region = case_when(
+      region == 1 ~ "Africa",
+      region == 2 ~ "Americas",
+      region == 3 ~ "Asia",
+      region == 4 ~ "Europe",
+      region == 5 ~ "Oceania"
+    )
+  ) 
+```
+
+
+### `arrange` variables
+
+`arrange()` allows us to sort/reorder a tibble's (dataframe) rows according to the values of a specific variable. Unlike `filter()` or `select()`, `arrange()` does not remove any rows or columns from the tibble. Example:
+
+```{r}
+pei %>%
+  arrange(PEIIndexp) %>% 
+  select(ISO, PEIIndexp) %>%
+  slice(1:10)
+
+pei %>%
+  arrange(desc(PEIIndexp)) %>% 
+  select(ISO, PEIIndexp) %>%
+  slice(1:10)
+
+pei %>%
+  arrange(-PEIIndexp) %>% # trick for descending order 
+  select(ISO, PEIIndexp) %>%
+  slice(1:10)
+```
+
+
+### `summarize()` tibbles
+
+We often need to calculate *summary statistics*, things like the *mean* (also called the average) and the *median* (the middle value). Other examples of summary statistics include the *sum*, the *minimum*, the *maximum*, and the *standard deviation*.
+
+The function `summarize()` allows us to calculate these statistics on individual columns from a tibble. Example:
+
+```{r}
+pei %>% # take dataset
+  summarise(
+    mean_PEIindex = mean(PEIIndexi, na.rm = T),
+    sd_PEIindex = sd(PEIIndexi) 
+  )
+```
+
+We can also let `R` perform operations within subgroups, rather than on the entire dataset:
+
+```{r}
+pei %>% # take dataset
+  group_by(region) %>% # group by region
+    summarise(
+    mean_PEIindex = mean(PEIIndexi, na.rm = T),
+    sd_PEIindex = sd(PEIIndexi, na.rm = T) # why NA?
+  )
+
+
+pei %>% # take dataset
+  group_by(region) %>% # group by region
+  summarise(count = n())
+```
+
+
+## Special Cases for Data Viz 
+
+### Adding Text Layer with `geom_text`
+
+Sometimes you may want to provide additional layer of information, such as, for instance, the country labels with text. `geom_text` allows us to do so for all observations at once (or a portion of them): 
+
+```{r}
+ggplot(
+  data = pei,
+  mapping = aes(
+    y = PEIIndexi, # vertical axis 
+    x = gdp_pc_ppp, # horizontal axis 
+    color = region # add color by region
+  )
+) +
+  geom_point() + # add points 
+  ylim(0, 100) + # show 0 to 100 values for y
+  geom_text(
+    aes(label = ISO), # add label aesthetic, from ISO code variable 
+    show.legend = FALSE # hide letters in the legend 
+  ) +
+  scale_color_viridis_d() # make colors colorblind-friendly
+```
+
+### Adding Text Layer to Outliers in Boxplot (`ggrepel` package)
+
+```{r}
+ggplot(
+  data = pei,
+  mapping = aes(x = gdp_pc_ppp, y = 1)
+) +
+  geom_boxplot() +
+  geom_text(
+    data = pei %>% filter(gdp_outlier),
+    aes(label = ISO), nudge_y = 0.05
+  )
+
+ggplot(
+  data = pei,
+  mapping = aes(x = gdp_pc_ppp, y = 1)
+) +
+  geom_boxplot() +
+  ggrepel::geom_text_repel(
+    data = pei %>% filter(gdp_outlier),
+    aes(label = ISO)
+  )
+```
+
+
+### Adding Two Layers with Different Scales (Advanced)
+
+```{r}
+ggplot(
+  data = pei,
+  mapping = aes(x = PEIIndexi) # mapping for every geom below
+) +
+  geom_histogram(
+    mapping = aes(y = after_stat(density)), # mapping only for histogram
+    binwidth = 2, # one bin = one unit of x variable 
+    boundary = 0, # there is a cutoff at 0 (for interpretation)
+    alpha = 0.5, # transparency
+    color = "grey20" # color for borders
+  ) +
+  geom_density(size = 1) +
+  scale_y_continuous(
+    name = "Density", # name of the main axis 
+    sec.axis = sec_axis( # add second axis 
+      trans = ~ .x * (nrow(pei)), # the transformation to the main axis to be applied 
+      name = "Count", # name of the second axis 
+    )
+  ) 
+```
+
+
+## Resources
+
+-   Chapter 4 **Data transformation** in <https://r4ds.hadley.nz/data-transform>
+-   Section 2.5 **Visualizing relationships** in <https://r4ds.hadley.nz/data-visualize#visualizing-relationships>
+-   Chapter 10 **Layers** in <https://r4ds.hadley.nz/layers>
+
+
