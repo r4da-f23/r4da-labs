@@ -1,0 +1,497 @@
+---
+title: "Lab 4: Data Wrangling with `dplyr` and `tidyr`"
+author: "Viktoriia Semenova"
+editor: visual
+date: "September 27, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "readxl", # for reading xlsx files 
+  "countrycode", # for automatic country code variables
+  "janitor", # clean_names for datasets 
+  "visdat", # visual inspection of datasets 
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+
+
+# load data for today 
+# ucdp <- read_rds("data/GEDEvent_v23_1.rds")
+# unpko <- read_dta("data/CMPS Mission Totals 1990-2011.dta")
+unpko <- read_excel("data/mission-month_12-2019.xlsx") # check the importing
+```
+
+\newpage
+
+## Replication Text: *Beyond Keeping Peace: United Nations Effectiveness in the Midst of Fighting*
+
+> While United Nations peacekeeping missions were created to keep peace and perform post-conflict activities, since the end of the Cold War peacekeepers are more often deployed to active conflicts. Yet, we know little about their ability to manage ongoing violence. This article provides the first broad empirical examination of UN peacekeeping effectiveness in reducing battlefield violence in civil wars. We analyze how the number of UN peacekeeping personnel deployed influences the amount of battlefield deaths in all civil wars in Africa from 1992 to 2011. The analyses show that increasing numbers of armed military troops are associated with reduced battlefield deaths, while police and observers are not. Considering that the UN is often criticized for ineffectiveness, these results have important implications: if appropriately composed, UN peacekeeping missions reduce violent conflict.
+
+In the upcoming labs, we will refer to this article by Lisa Hultman, Jacob Kathman, and Megan Shannon, published in 2014 in the *American Political Science Review*. It is a good example of a well-structured empirical article (which you could use as a reference when writing your own papers), and replicating it would involve various common tasks in data analysis. 
+
+
+## Exploring the Dataset:  UN peacekeeping personnel (from 1990-2011) by [Jakob Kathman](http://jacobkathman.weebly.com/research.html)
+
+The dataset can be downloaded from this page: <https://kathmanundata.weebly.com/mission-personnel-dataset.html>
+
+```{r}
+glimpse(unpko)
+```
+
+
+## Basic Data Wrangling Functions
+
+We can't use all the beautiful plots until we have "wrangled" the data into a convenient shape and have all the variables we need for plotting. You have seen some of these functions already, but let's now look at them a bit more systematically. Key wrangling functions include:
+
+-   `filter()`: to pick out the *rows* we want to keep from a tibble.
+
+-   `select()`: to pick out the *columns* we want to keep from a tibble.
+
+-   `arrange()`: to sort the rows in a tibble, in either ascending or descending order.
+
+-   `mutate()`: to create new columns.
+
+-   `summarize()`: to create a new tibble comprised of summary statistics for one (or more) rows, depending on the use of the `.by` argument.
+
+### The pipe operator: `%>%` (again)
+
+The pipe operator (`%>%`) allows us to combine multiple operations in `R` into a single sequential *chain* of actions. Much like how the `+` sign has to come at the end of the line when constructing plots --- because we are building the plot layer-by-layer --- the pipe operator `%>%` has to come at the end of the line because we are building a data wrangling pipeline step-by-step. If you do not include the pipe operator, R assumes the next line of code is unrelated to the layers you built and you will get an error.
+
+### `filter` rows
+
+The `filter()` function works much like the "Filter" option in Microsoft Excel. It allows you to specify criteria about the values of a variable in your dataset and then selects only the rows that match that criteria.
+
+```{r}
+unpko %>% 
+  filter(missioncountry == "Rwanda")
+```
+
+Here are a few more operators that we can use here:
+
+-   `>` for "greater than"
+-   `<` for "less than"
+-   `>=` for "greater than or equal to"
+-   `<=` for "less than or equal to"
+-   `!=` for "not equal to"
+-   `%in%` for "inside"
+
+```{r}
+# everything but Rwanda (show, not store in the environment)
+unpko %>% 
+  filter(missioncountry != "Rwanda")
+
+# every row where troop index is ABOVE 10
+unpko %>% 
+  filter(troop > 10)
+
+# every row where deaths_civilians index is  EQUAL TO or ABOVE 10
+unpko %>% 
+  filter(troop >= 10)
+```
+
+Furthermore, you can combine multiple criteria using operators that make comparisons:
+
+-   `|` for "or"
+-   `&` for "and" (or just `,`)
+-   `!` for "not"
+
+```{r}
+unpko %>%
+  filter(
+    year > 2005,
+    missioncountry == "Kosovo"
+  )
+
+unpko %>%
+  filter(
+    year > 2000,
+    missioncountry == "Kosovo" | missioncountry == "Burundi",
+    total >  mean(total, na.rm = T)
+  )
+
+# same result but %in% instead or OR (|) for regions  
+unpko %>%
+  filter(
+    year > 2000,
+    missioncountry %in% c("Kosovo", "Burundi"),
+    total >  mean(total, na.rm = T)
+  )
+```
+
+
+
+### `arrange` rows 
+
+`arrange()` allows us to sort/reorder a tibble's (dataframe) rows according to the values of a specific variable. Unlike `filter()` or `select()`, `arrange()` does not remove any rows or columns from the tibble. Example:
+
+```{r}
+unpko %>%
+  arrange(total) 
+
+unpko %>%
+  arrange(desc(total)) 
+
+unpko %>%
+  arrange(-total) 
+```
+
+### `distinct` rows 
+
+`distinct()` finds all the unique rows in a dataset, so in a technical sense, it primarily operates on the rows. Most of the time, however, you'll want the distinct combination of some variables, so you can also optionally supply column names:
+
+```{r}
+unpko %>%
+  distinct(mission) 
+
+unpko %>%
+  distinct(mission, year) 
+```
+
+The idea is similar to `count()` function you saw before, but `distinct()` does not provide us the infomratino aobut the sizes of groups. 
+
+### `select` variables
+
+This is used for subsetting variables (columns, not rows), deleting columns, and re-arranging columns.
+
+```{r}
+unpko %>%
+  select(mission, total) 
+
+unpko %>%
+  select(-mission, -total) 
+
+# change the order of columns in dataset 
+unpko %>%
+  relocate(mission, total) 
+
+# change the order of columns in dataset 
+unpko %>%
+  select(mission, total, everything())
+
+# only select variables starting with "y"
+unpko %>% 
+  select(starts_with("mission"))
+```
+
+### `mutate` variables
+
+`mutate()` takes existing columns and creates a new column or overwrites the existing one. 
+
+```{r}
+unpko <- unpko %>%
+  dplyr::mutate(armed_forces = troop + police,
+                yearmon = paste0(year, "_", month))
+
+unpko %>% 
+  select(armed_forces, missioncountry) %>% 
+  mutate(armed_forces = armed_forces / 100)
+```
+
+Here is how we can remove remove variables with `mutate()` (although the same can be done with `select()` command):
+
+```{r}
+unpko %>% 
+  select(missioncountry, armed_forces) %>% 
+  mutate(armed_forces = NULL)
+```
+
+
+#### Recoding Variable Types
+
+As you know from week 1, there are various data types in `R`, such as numeric, character, logical, factors. For some purposes, we need to recode one type into another. Changing the type also works through the `mutate()` in the same fashion, with the following syntax:
+
+- `var = as.character(var)`
+- `var = as.numeric(var)`
+- `var = as.logical(var)`
+- `var = as.factor(var)`
+
+```{r}
+unpko %>%
+  mutate(
+    armed_forces = as.character(armed_forces) 
+  ) %>%
+  pull(armed_forces) %>%
+  summary()
+```
+
+
+
+
+
+### `summarize` tibbles
+
+We often need to calculate *summary statistics*, things like the *mean* (also called the average) and the *median* (the middle value). Other examples of summary statistics include the *sum*, the *minimum*, the *maximum*, and the *standard deviation*.
+
+The function `summarize()` allows us to calculate these statistics on individual columns from a tibble. Example:
+
+```{r}
+unpko %>% 
+  summarise(
+    mean_armed_forces = mean(armed_forces, na.rm = T),
+    sd_armed_forces = sd(armed_forces, na.rm = T) 
+  )
+```
+
+We can also let `R` perform operations within subgroups, rather than on the entire dataset:
+
+```{r}
+unpko %>% 
+  group_by(mission) %>%
+  summarise(
+    median_armed_forces = median(armed_forces, na.rm = T),
+    max_armed_forces = max(armed_forces, na.rm = T) 
+  )
+
+# how many observations (months) are there per mission 
+unpko %>% # take dataset
+  group_by(mission) %>% # group by mission
+  summarise(count = n())
+```
+
+This function can also be useful when we need to aggregate the dataset to another level. `unpko` dataset is on mission-month level, but let's say we needed to aggregate it to mission-year instead. 
+
+
+```{r}
+unpko %>%
+  group_by(year) %>%
+  summarise_if(is.numeric, sum, na.rm = TRUE) 
+
+# what is wrong in this code? how can you fix it?
+```
+
+
+
+## Handling Missing Data 
+
+- Why do we care about missing data? 
+
+There are two types of missing data:
+
+- **Explicitly** missing means you can see an `NA` in your data. _An explicit missing value is the presence of an absence._
+- **Implicitly** missing means an entire row of data is simply absent from the data. _An implicit missing value is the absence of a presence._
+
+Here we will primarily talk about the first kind, i.e. handling `NA`s.  
+
+### Basic Info
+
+- `NA` in `R` is a logical value, like `TRUE` and `FALSE` 
+- Sometimes `R` may import missing data wrong (e.g. treat `NA`s as character), so might need to explicitly recode it into `NA` 
+
+```{r}
+example_numeric <- c(8, "NA", 9, "missing", 10, " ", "")
+example_numeric 
+example_numeric %>% as.numeric() # will convert all character into NAs
+```
+
+- Missing values represent the unknown so they are "contagious": almost any operation involving an unknown value will also be unknown
+
+```{r}
+NA > 5
+cor(
+  x = c(1, 2, 3), 
+  y = c(NA, 3, 4)
+  )
+```
+
+### Inspecting missing values 
+
+```{r}
+# check if each individual observation is NA
+is.na(unpko$troop)
+
+# count all NAs in the variable 
+# sum treats TRUE as 1 and FALSE as 0
+is.na(unpko$troop) %>%
+  sum()
+
+# sum(is.na(pei$PEIIndexp)) # same as above
+
+# calculate the share of NAs in the variable 
+sum(is.na(unpko$troop)) / 
+  length(unpko$troop)
+
+# summary (contains NA info)
+summary(unpko$troop)
+
+# summary for multiple columns (contains NA info)
+unpko %>% 
+  select(troop:militaryobservers, armed_forces) %>%
+  summary()
+
+# visual inspection 
+unpko %>% 
+  # select(troop:militaryobservers, armed_forces) %>%
+  visdat::vis_miss() 
+```
+
+
+### What _not_ to do: Remove `NA` as a first step 
+
+```{r}
+na.omit(unpko)
+```
+
+### Better: Select the variables you work with and clean the dataset after 
+
+```{r}
+unpko %>% 
+  select(mission, militaryobservers) %>%
+  na.omit() # base R version 
+
+unpko %>% 
+  select(mission, militaryobservers) %>%
+  drop_na() # tidyr version 
+```
+
+
+
+
+## Adding Country/Region Identifiers
+
+
+Often working with one dataset is not sufficient and we need to combine multiple datasets to work with variables together. Since our goal is to know if UN PKO personnel numbers impact conflict mortality, we would need data for mortality. For that, we will need to merge the `unpko` dataset, and this will require us to have a variable that is common across the two datasets. `countrycode` will help us with that. Let's see how it works by adding the region variable first: 
+
+
+```{r}
+unpko <- unpko %>% # overwrite our dataset
+  mutate(region = countrycode(missioncountry, "country.name", "continent"))
+```
+
+We get the warning: 
+
+> Some values were not matched unambiguously: Central African Republic-Chad, Croatia-Bosnia-Herzegovina, Ethiopia-Eritrea, India-Pakistan, Iran-Iraq, Iraq-Kuwait, Kosovo, Kosovo/Yugoslavia, Unknown, Various
+
+We need to code these observations manually. To do this, we first check which cases are affected (" , " indicates that we have observations with missing observations for a country).
+
+
+```{r}
+unpko %>%
+  relocate(mission, missioncountry, region, year) %>% 
+  filter(is.na(region)) 
+```
+
+As we can see, we do have observations with missing values in the `missioncountry` variable. We will first code the `region` variable for Kosovo and Yugoslavia manually. We use the `if_else()` function. The logic is as follows: `if_else(test, yes, no)`. Or, in plain words: If an object fulfills a certain value/logical mode (`test`), then do whatever is in `yes`. If not, do whatever is in `no`. We will see this with the following example:
+
+```{r}
+unpko <- unpko %>%
+  mutate(
+    region = if_else(missioncountry == "Kosovo", "Europe", region),
+    region = if_else(missioncountry == "Yugoslavia", "Europe", region)
+  )
+```
+
+
+Can you write this code with `case_when` command? 
+
+```{r}
+#| eval: false
+unpko <- unpko %>%
+  mutate(
+  )
+```
+
+
+If we check now again, we see that we have only regions without a region code left that have no observation in `missioncountry`. 343 missions had no mission country assigned at all:
+
+```{r}
+unpko %>% 
+  dplyr::select(mission, missioncountry, region, year, everything()) %>% # Sort data
+  dplyr::filter(is.na(region)) 
+```
+
+We will use the mission names (`mission`) to identify the mission countries. To do this, we will first need to look up the distinct missions. 
+
+```{r}
+unpko %>% 
+    filter(is.na(region)) %>% # regions where there are missing values
+    distinct(mission) # select only unique missions
+```
+
+
+```{r}
+unpko <- unpko %>%
+  drop_na(region) # Drop all regions with NAs
+```
+
+If we want to check if there are still missing values in the `region` variable, we use the following code:
+
+```{r}
+unpko %>% 
+  filter(is.na(region)) 
+```
+
+Or we could also count if there are still missing values:
+
+```{r}
+unpko %>%
+  summarise(count = sum(is.na(region))) 
+```
+
+We will now restrict our dataset to the African continent and store it in the `data` folder.
+
+```{r}
+#| eval: false
+unpko_africa <- unpko %>% 
+  dplyr::filter(region == "Africa")
+
+write_csv(unpko_africa, "data/unpko_africa.csv")
+```
+
+
+## Practice Exercise
+
+Using the commands required for data wrangling and visualization, try to replicate the following figure:
+
+![](https://journals.sagepub.com/cms/10.1177/0738894213491180/asset/images/large/10.1177_0738894213491180-fig3.jpeg)
+
+
+
+```{r}
+
+```
+
+
+## Next Time
+
+- Merging Datasets
+- Creating Panel-like Structure 
+- Generating Post-Conflict Data
+
+
+## Resources
+
+-   Chapter 4 **Data transformation** in <https://r4ds.hadley.nz/data-transform>
+-   Section 2.5 **Visualizing relationships** in <https://r4ds.hadley.nz/data-visualize#visualizing-relationships>
+-   Chapter 10 **Missing values** in <https://r4ds.hadley.nz/missing-values>
+
+
