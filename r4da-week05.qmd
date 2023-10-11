@@ -76,7 +76,7 @@ glimpse(unpko)
 
 ## Goals for Today
 
--   Organization: expiring PATs, ILIAS Intro to R, GitHub student pack (Datacamp accounts for 3 months)
+-   Organization: expiring PATs, [ILIAS Intro to R](https://ilias.uni-mannheim.de/ilias.php?ref_id=1334688&cmdClass=ilcourseregistrationgui&cmdNode=ye:mq:96&baseClass=ilRepositoryGUI), [GitHub student pack](https://education.github.com/pack) (Datacamp accounts for 3 months)
 -   Basics of handling dates in `R` with `lubridate`
 -   Finish the data preprocessing (aggregation & merging) for the paper 
   - Reshaping
