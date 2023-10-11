@@ -1,0 +1,667 @@
+---
+title: "Lab 6: Data Wrangling II"
+author: "Viktoriia Semenova"
+editor: source
+date: "October 11, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "readxl", # for reading xlsx files 
+  "countrycode", # for automatic country code variables
+  "janitor", # clean_names for datasets 
+  "visdat", # visual inspection of datasets 
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+
+
+# load data for today & create aggregated variables 
+unpko <- read_excel("data/mission-month_12-2019.xlsx", na = "-999") %>%
+  group_by(yearmon) %>%
+  mutate(
+    n_pko = length(yearmon),
+    total_troop = sum(troop, na.rm = T),
+    total_police = sum(police, na.rm = T),
+    total_military = sum(militaryobservers, na.rm = T),
+    total_all = sum(total, na.rm = T)
+  ) %>%
+  ungroup() 
+```
+
+\newpage
+
+## Replication Text: *Beyond Keeping Peace: United Nations Effectiveness in the Midst of Fighting*
+
+> While United Nations peacekeeping missions were created to keep peace and perform post-conflict activities, since the end of the Cold War peacekeepers are more often deployed to active conflicts. Yet, we know little about their ability to manage ongoing violence. This article provides the first broad empirical examination of UN peacekeeping effectiveness in reducing battlefield violence in civil wars. We analyze how the number of UN peacekeeping personnel deployed influences the amount of battlefield deaths in all civil wars in Africa from 1992 to 2011. The analyses show that increasing numbers of armed military troops are associated with reduced battlefield deaths, while police and observers are not. Considering that the UN is often criticized for ineffectiveness, these results have important implications: if appropriately composed, UN peacekeeping missions reduce violent conflict.
+
+In the upcoming labs, we will refer to this article by Lisa Hultman, Jacob Kathman, and Megan Shannon, published in 2014 in the *American Political Science Review*. It is a good example of a well-structured empirical article (which you could use as a reference when writing your own papers), and replicating it would involve various common tasks in data analysis.
+
+## Exploring the Dataset: UN peacekeeping personnel (from 1990-2011) by [Jakob Kathman](http://jacobkathman.weebly.com/research.html)
+
+The dataset can be downloaded from this page: <https://kathmanundata.weebly.com/mission-personnel-dataset.html>
+
+```{r}
+glimpse(unpko)
+```
+
+## Goals for Today
+
+-   Organization: expiring PATs, ILIAS Intro to R, GitHub student pack (Datacamp accounts for 3 months)
+-   Basics of handling dates in `R` with `lubridate`
+-   Finish the data preprocessing (aggregation & merging) for the paper 
+  - Reshaping
+  - Merging
+  - Creating Lagged variables 
+
+
+## Dates in `R`
+
+Date is another type of data in R, along with character, numeric (double/integer), and factor.
+
+When importing the dataset, the date format will be recognized automatically, but when it is not the case, you may need to do some extra manipulations. We will mostly use `lubridate` package for handling dates.
+
+```{r}
+lubridate::today() # date 
+lubridate::now() # time
+```
+
+There is an international standard for writing dates where the components of a date are organized from biggest to smallest separated by `-`. For example, in **ISO8601** October 9 2023 is `2023-10-09`. ISO8601 dates can also include times, where hour, minute, and second are separated by `:`, and the date and time components are separated by either a `T` or a space. For example, you could write 11:46 on October 9 2023 as either `2023-10-09 11:46` or `2023-10-09T11:46`.
+
+```{r}
+lubridate::today() %>% class() # check class of data 
+"2005-12-01" %>% class()
+
+lubridate::now() %>% class() # check class of data 
+"2005-12-01 11:50:25 CEST" %>% class()
+```
+
+### Converting Dates from Strings
+
+The easiest option for transformations is to use `as_date()` function (`as.Date()` from base R), although without additional arguments it is rather limited:
+
+```{r}
+"2005-12-01" %>% as.Date() %>% class() # base R syntax 
+"2005-12-01" %>% lubridate::as_date() %>% class() # lubridate package syntax
+"2005.12.01" %>% lubridate::as_date() %>% class() #  different separator 
+"2005/12-1" %>% lubridate::as_date() # can often handle different separators 
+```
+
+You can also use `lubridate`'s helpers which attempt to automatically determine the format once you specify the order of the component. To use them, identify the order in which year, month, and day appear in your dates, then arrange "y", "m", and "d" in the same order. That gives you the name of the `lubridate` function that will parse your date:
+
+```{r}
+# only month and year available 
+"2005.12" %>% lubridate::as_date(format = "%Y%m") # most flexible way 
+"2005.12" %>% lubridate::ym()
+"2005.12-31" %>% lubridate::ymd()
+"October 31, 2023" %>% lubridate::as_date() # doesn't work 
+"October 31, 2023" %>% lubridate::mdy() 
+"October 31st, 2023" %>% lubridate::mdy() 
+```
+
+While there are only o many ways you can write a date in text, it is useful to know the syntax of date-time format. The date-time format is a standard used across many programming languages, describing a date component with a `%` followed by a single character. For example, `%Y-%m-%d` specifies a date that's a year, `-`, month (as number) `-`, day (e.g., `2023-10-09`).
+
+```{r}
+"2005.12" %>% lubridate::as_date(format = "%Y%m") 
+"October 31, 2023" %>% lubridate::as_date(format = "%B%d,%Y") 
+"October 31, 2023" %>% as_date(format = "%B%d,%Y") %>% yday()
+"304" %>% lubridate::as_date(format = "%j") # current year as default
+```
+
+The most useful 
+
++--------------------------+----------------------------------------------------+--------------------+
+| Conversion specification | Description                                        | Example            |
++==========================+====================================================+====================+
+| `%a`                     | Abbreviated weekday                                | Sun, Thu           |
++--------------------------+----------------------------------------------------+--------------------+
+| `%A`                     | Full weekday                                       | Sunday, Thursday   |
++--------------------------+----------------------------------------------------+--------------------+
+| `%b or %h`               | Abbreviated month                                  | May, Jul           |
++--------------------------+----------------------------------------------------+--------------------+
+| `%B`                     | Full month                                         | May, July          |
++--------------------------+----------------------------------------------------+--------------------+
+| `%d`                     | Day of the month: 01-31                            | 27, 07             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%j`                     | Day of the year: 001-366                           | 148, 188           |
++--------------------------+----------------------------------------------------+--------------------+
+| `%m`                     | Month: 01-12                                       | 05, 07             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%U`                     | Week: 01-53 (with Sunday as first day of the week) | 22, 27             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%w`                     | Weekday: 0-6 (Sunday is 0)                         | 0, 4               |
++--------------------------+----------------------------------------------------+--------------------+
+| `%W`                     | Week: 00-53 (with Monday as first day of the week) | 21, 27             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%x`                     | Date, locale-specific                              |                    |
++--------------------------+----------------------------------------------------+--------------------+
+| `%y`                     | Year without century: 00-99                        | 84, 05             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%Y`                     | Year with century: \                               | 1984, 2005         |
+|                          | 00 to 68 prefixed by 20\                           |                    |
+|                          | 69 to 99 prefixed by 19                            |                    |
++--------------------------+----------------------------------------------------+--------------------+
+| `%C`                     | Century                                            | 19, 20             |
++--------------------------+----------------------------------------------------+--------------------+
+| `%D`                     | Date formatted `%m/%d/%y`                          | 05/27/84, 07/07/05 |
++--------------------------+----------------------------------------------------+--------------------+
+| `%u`                     | Weekday: 1-7 (Monday is 1)                         | 7, 4               |
++--------------------------+----------------------------------------------------+--------------------+
+
+
+### Multiple Formats Mixed
+
+In a messy dataset, you may encounter mixed *orders* (not separators) for data in the same column. In this case, assuming you know what are the possible formats/orders for dates in your data, you will want to use the function `parse_date_time()` and specify the possible orders as follows. 
+
+```{r}
+c("2015-Mar-07", "06-Jun-2017") %>% 
+  parse_date_time(orders = c('ymd', 'dmy'))
+```
+
+### Code Along I
+
+
+1. **Parsing invalid dates:** Create a vector with two values, your birthday (as a string) in the **ISO8601** format and your name, and apply the `ymd()` function to that vector. What happens if you parse a string that contains invalid dates? 
+
+```{r}
+# vector with two values 
+
+
+```
+
+2. **Parsing formats:** Parse the vectors using an appropriate `lubridate` function. 
+
+```{r}
+c("August 19 (2015)", "January 1, 2010")  
+"12/30/14"
+c("November 5", "2020-11-08") 
+```
+
+
+### Importing dates when reading a data file (with `readr`)
+
+If your dataset contains an **ISO8601** date or date-time, you don't need to do anything; the loading function will automatically recognize it. For other date-time formats, you'll need to use `col_types` plus `col_date()` or `col_datetime()` along with a date-time format. This only works well for `readr` functions. 
+
+```{r}
+read_csv("data/unpko.csv", col_types = cols(yearmon = col_date("%Y.%m"))) %>% 
+  slice_head(n = 5)
+```
+
+
+In general, you should always use the simplest possible data type that works for your needs. That means if you can use a date instead of a date-time, you should. There are various manipulations you can perform with dates, such as calculating time intervals and many more.  
+
+
+## Reshaping Datasets
+
+Tidying your data is an inevitable part of working with datasets. Here we will see how to transform a dataset into a longer format for the purpose of plotting. 
+
+### Wide to Long: Convert Column Names into Values
+
+Here is an illustration for the `pivot_longer()` syntax, which will allow us to reshape the dataset:
+
+![](https://rladiessydney.org/img/pivot_longer_data.png)
+In `pivot_longer()`, `cols` specifies the column names that you want to convert from, which accept the same format as that in `dplyr::select()`. `names_to` specifies the variable name you want to use for the column names. Finally, `values_to` specifies the variable name for holding the values in the selected columns. 
+
+Recall the aggregated dataset and plot that you have recreated at home? Let's see how to plot it with a dataset in long format and also handle dates correctly:
+
+```{r}
+# handle dates appropriately  
+unpko_ploting <- unpko %>%
+  mutate(yearmon = as_date(paste0(year, "/", month), format = "%Y/%m")) %>%
+  group_by(yearmon) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>%
+  select(yearmon, police, militaryobservers, troop, total) %>%
+  filter(yearmon != "2014-09-01") # missing data in unpko
+
+# reshape the dataset to longer format
+unpko_ploting <- unpko_ploting %>%
+  pivot_longer(cols = police:total, values_to = "personnel", names_to = "type") %>%
+  mutate(
+    type = case_when(
+      type %in% c("police", "troop", "total") ~ str_to_sentence(type),
+      type == "militaryobservers" ~ "Military Observers"
+    ),
+    type = fct(type)
+  ) 
+
+# plot all lines at once with grouping variable 
+unpko_ploting %>%
+  ggplot(aes(
+    x = yearmon,
+    y = personnel,
+    linetype = type,
+    color = type
+  )) +
+  geom_line() +
+  labs(
+    y = "Number of Personnel",
+    x = "",
+    linetype = "",
+    color = "",
+    title = "UN Peacekeeping Personnel Worldwide across Missions, 1990-2019"
+  ) +
+  scale_linetype_manual(
+    values = c(
+      "Total" = "solid",
+      "Troop" = "dashed",
+      "Police" = "longdash",
+      "Military Observers" = "dotted"
+    ),
+    limits = c("Total", "Troop", "Police", "Military Observers")
+  ) +
+  scale_y_continuous(
+    labels = scales::comma_format(),
+    limits = c(0, 110000),
+    breaks = seq(0, 110000, 10000)
+  ) +
+  scale_x_date(date_labels = "%Y", date_breaks = "4 years") +
+  scale_color_viridis_d( # colorblind-friendly palette
+    end = 0.8, # remove the yellow from palette
+    direction = -1,     # reverse the colors
+    limits = c("Total", "Troop", "Police", "Military Observers")
+  ) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank()
+  ) 
+
+```
+
+Note that we added some color using palette called `viridis` to this plot: <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html> 
+
+This palette satisfies the following criteria: 
+ - *Colorful*, spanning as wide a palette as possible so as to make differences easy to see
+ - *Perceptually uniform*, meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values (importnat for greyscale printing!)
+ - *Robust to colorblindness*, so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing
+
+### Code Along II: Long to Wide 
+
+While it is used less often (in my experience), we can sometimes still need to do the reverse procedure. Let's create a dataset for two students who took classes and got grades. We want to have one observation per student, with columns as course titles.
+
+```{r}
+df <- tribble(
+  ~student, ~class, ~grade,
+  "Anna", "Pol101", 1,
+  "Bob", "Pol101", 2,
+  "Bob", "Econ101", 1.3,
+  "Anna", "Econ101", 1.7,
+  "Anna", "Pol102", 1.3
+)
+
+# df %>%
+#   pivot_wider(
+#     names_from = , # column names in new dataset   
+#     values_from =  # values  
+#   )
+```
+
+
+
+## Merging Datasets: `unpko` and `ged`
+
+To merge two datasets directly, you need a way to match one row in dataset A to another row(s) in dataset B. This is most often done with the help of an *identifier* or *key* column. It is essential that the values in the *identifier* columns of the datasets match perfectly between the datasets (e.g., if we match by country, it should be `US` in both datasets, not `U.S.` in one and `US` in another). Hence our procedure for merging datasets will look as follows:
+
+0.  Explor/prepare/aggergate datasets 
+1.  Identify the column(s) to match upon: rows should be *uniquely* identified 
+2.  Check the values in these columns for both datasets 
+3.  Merge the datasets
+4.  Check that everything worked as expected 
+
+
+### Adding Country/Region Identifiers 
+
+Often working with one dataset is not sufficient and we need to combine multiple datasets to work with variables together. Since our goal is to know if UN PKO personnel numbers impact conflict mortality, we would need data for mortality. For that, we will need to merge the `unpko` dataset, and this will require us to have a variable that is common across the two datasets. `countrycode` will help us with that. Let's see how it works by adding the region variable first:
+
+```{r}
+unpko <- unpko %>% # overwrite our dataset
+  mutate(region = countrycode(missioncountry, "country.name", "continent"))
+```
+
+We get the warning:
+
+> Some values were not matched unambiguously: Central African Republic-Chad, Croatia-Bosnia-Herzegovina, Ethiopia-Eritrea, India-Pakistan, Iran-Iraq, Iraq-Kuwait, Kosovo, Kosovo/Yugoslavia, Unknown, Various
+
+We need to code these observations manually. To do this, we first check which cases are affected (" , " indicates that we have observations with missing observations for a country).
+
+```{r}
+unpko %>%
+  relocate(mission, missioncountry, region, year) %>% 
+  filter(is.na(region)) 
+```
+
+As we can see, we do have observations with missing values in the `missioncountry` variable. We will first code the `region` variable for Kosovo and Yugoslavia manually. We use the `if_else()` function. The logic is as follows: `if_else(test, yes, no)`. Or, in plain words: If an object fulfills a certain value/logical mode (`test`), then do whatever is in `yes`. If not, do whatever is in `no`. We will see this with the following example:
+
+```{r}
+unpko <- unpko %>%
+  mutate(
+    region = if_else(
+      missioncountry %in% c(
+        "Kosovo",
+        "Yugoslavia",
+        "Kosovo/Yugoslavia",
+        "Croatia-Bosnia-Herzegovina"
+      ),
+      "Europe",
+      region
+    ),
+    region = if_else(
+      missioncountry %in% c(
+        "Iran-Iraq",
+        "Iraq-Kuwait",
+        "India-Pakistan"
+      ),
+      "Asia",
+      region
+    ),
+    region = if_else(
+      missioncountry %in% c(
+        "Central African Republic-Chad",
+        "Ethiopia-Eritrea"
+      ),
+      "Africa",
+      region
+    ),
+  )
+```
+
+
+If we check now again, we see that we have only regions without a region code left that have no observation in `missioncountry`. 442 missions had no mission country assigned at all:
+
+```{r}
+unpko %>% 
+  dplyr::select(mission, missioncountry, region, year, everything()) %>% 
+  filter(is.na(region)) 
+```
+
+We will use the mission names (`mission`) to identify the mission countries. To do this, we will first need to look up the distinct missions:
+
+```{r}
+unpko %>% 
+    filter(is.na(region)) %>% # regions where there are missing values
+    distinct(mission) # select only unique missions
+```
+Upon looking up these missions, we can either manually assign regions to the corresponding rows or drop the observations. In this case, we will do the latter: 
+
+```{r}
+unpko <- unpko %>%
+  drop_na(region) # drop all regions with NAs
+```
+
+If we want to check if there are still missing values in the `region` variable, we can use the following code:
+
+```{r}
+unpko %>% 
+  filter(is.na(region)) 
+```
+
+We will now restrict our dataset to the African continent (as in the original paper) and write it in the `data` folder as a `csv` file.
+
+```{r}
+unpko_africa <- unpko %>% 
+  dplyr::filter(region == "Africa")
+
+write_csv(unpko_africa, "data/unpko_africa.csv")
+```
+
+### Aggregating `unpko_africa` to Monthly Level
+
+As in the oroginal paper, we will try to make sure both datasets are on the dyad-month level prior to merging. 
+
+Currently, our `unpko` dataset is on mission-month level. It is however possible that more than one country is affected by more than one mission. Let's check if that's a valid concern:
+
+```{r}
+unpko_africa <- unpko_africa %>%
+  mutate(
+    ccode = countrycode(missioncountry, "country.name", "iso3c"),
+    ccode = if_else(missioncountry == "Central African Republic-Chad", "TCD", ccode),
+    ccode = if_else(missioncountry == "Ethiopia-Eritrea", "ETH", ccode)
+  )
+
+unpko_africa %>%
+  count(ccode, yearmon) %>% 
+  filter(n > 1)
+```
+
+Turns out we're almost ready: there were two situations with non-unique mission country, and upon reading closer about the missions, I've made (an arbitrary) decision to attribute these mission to the countries of Chad and Ethiopia respectively. This kind of information should be included in papers, as a footnote or when describing the data used for analysis. So to aggregate to country-month level now, we need to do the following: 
+
+```{r}
+unpko_africa_agg <- unpko_africa %>%
+  group_by(ccode, yearmon) %>%
+  dplyr::summarise(
+    year = first(year),
+    missioncountry = first(missioncountry),
+    troop = mean(troop, na.rm = T),
+    police = mean(police, na.rm = T),
+    militaryobservers = mean(militaryobservers, na.rm = T),
+    total = mean(total, na.rm = T),
+    total2 = mean(total2, na.rm = T),
+    monthly_total_troop = mean(total_troop, na.rm = T),
+    monthly_total_police = mean(total_police, na.rm = T),
+    monthly_total_military = mean(total_military, na.rm = T),
+    monthly_total_personnel = mean(total_all, na.rm = T),
+    av_n_pko = mean(n_pko, na.rm = T)
+  ) %>% 
+  ungroup()
+
+```
+
+### Preparing GED dataset 
+
+Here we will do the following:
+
+- load the dataset in  `rds` format  
+- aggregate to government/rebel dyad-month
+
+`rds` is a format that is native to `R` and allows us to compress large files. You can download the GED v23 file from UCDP website directly, but with GitHub's limitation of 100 MB files, we cannot share it easily in the repo. Here is where `rds` comes in handy.
+
+```{r}
+#| eval: false
+# ged <- read_csv("~/Downloads/GEDEvent_v23_1.csv") # downloaded file 230 MB
+# write_rds(ged, "data/GEDEvent_v231.rds", compress = "gz") # compress to 23 MB
+```
+
+As always, first look at the data: 
+
+```{r}
+ged <- read_rds("data/GEDEvent_v23.rds")
+glimpse(ged)
+```
+
+Now let's select only the events relevant for us and create identifiers `ccode` and `yearmon`. 
+
+```{r}
+ged_africa <- ged %>%
+  filter(
+    region == "Africa", # only African countries 
+    type_of_violence != 3 # remove one-sided violence conflicts
+  ) %>%
+  mutate(
+    ccode = countrycode(country, "country.name", "iso3c"), # no warnings
+    yearmon = paste0(
+    year, ".", str_pad(month(date_start), side = "left", pad = "0", width = 2)
+    ) 
+    # %>% as.numeric()
+    ) %>%
+  dplyr::select(
+    country, ccode, year, conflict_new_id, dyad_dset_id, side_b, 
+    yearmon, active_year, date_start, date_end, 
+    deaths_a, deaths_b, deaths_civilians, deaths_unknown, 
+    low, best, high
+  )
+
+ged_africa %>% 
+  slice_head(n = 10)
+```
+
+Now we can move to aggregating on the dyad-month level:
+
+```{r}
+ged_africa_agg <- ged_africa %>%
+  group_by(ccode, dyad_dset_id, yearmon) %>%
+  summarize(
+    country = first(country),
+    year = first(year),
+    conflict_new_id = first(conflict_new_id),
+    active_year = first(active_year),
+    side_b = first(side_b),
+    deaths_a = sum(deaths_a),
+    deaths_b = sum(deaths_b), 
+    deaths_civilians = sum(deaths_civilians), 
+    deaths_unknown = sum(deaths_unknown), 
+    low = sum(low),
+    best = sum(best), 
+    high = sum(high)
+  ) %>%
+  ungroup()
+
+# check the dataset
+ged_africa_agg %>% 
+  glimpse()
+```
+
+### Combining `unpko_africa` and `ged_africa_agg` with an Identifier
+
+Here is a reminder on the joining functions from `dplyr`: 
+
+![](images/joins.png)
+
+>  Which keys should we use to merge the datasets? 
+
+
+Let's check the combinations of identifiers (aka keys) again: 
+
+```{r}
+unpko_africa_agg %>% 
+  count(ccode, yearmon) %>% 
+  filter(n > 1) 
+
+# why do we have multiple observations per combination? 
+ged_africa_agg %>% 
+  count(ccode, yearmon, sort = T) %>% 
+  filter(n > 1)
+```
+
+Let's see a toy example of what we'll be doing: 
+
+```{r}
+df <- tribble(
+  ~student, ~class, ~grade,
+  "Anna", "Pol101", 1,
+  "Bob", "Pol101", 2,
+  "Bob", "Econ101", 1.3,
+  "Anna", "Econ101", 1.7,
+  "Anna", "Pol102", 1.3,
+  "Polly", "Sta101", 1
+)
+
+df1 <- tribble(
+  ~student, ~year,
+  "Anna", 1,
+  "Bob", 2,
+  "Sam", 1
+)
+
+df %>% full_join(df1) 
+df %>% left_join(df1) # no Sam 
+df %>% right_join(df1) # no Polly 
+df %>% inner_join(df1) # no Polly & Sam
+```
+
+> Which function should we use here and why? 
+> What should be the ordering of datasets? Which parts can we drop right away (if any)? (think about our dependent variable)
+
+```{r}
+ged_unpko_africa <- ged_africa_agg %>% # generate new dataset 
+  left_join(unpko_africa_agg, by = c("yearmon", "ccode", "year")) 
+# how can we fix this error?
+```
+
+## Creating Lagged Variables
+
+It makes sense that the effects of UN personnel is not instantaneous, so we also want to account for this temporal component by creating lagged variables for UN personnel. 
+
+Here is essentially what we want to do:
+
+```{r}
+tibble(x = c(1, 2, 3, 4, 5, NA, 7, 8)) %>%
+  mutate(x_lag = lag(x))
+```
+
+
+```{r}
+# naive approach: what went wrong here? 
+ged_unpko_africa %>% 
+  mutate(
+    troop_lag = lag(troop, order_by = yearmon),
+    ) %>% 
+  select(yearmon, dyad_dset_id, troop, troop_lag) %>% View()
+
+# what kind of grouping will we need?
+ged_unpko_africa %>% 
+  count(ccode) 
+
+# have a look at country with not too many observations 
+ged_unpko_africa %>% 
+  filter(ccode == "COG")
+
+# creating the lagged versions of variables 
+ged_unpko_africa <- ged_unpko_africa %>%
+  group_by(ccode, dyad_dset_id) %>%
+  arrange(ccode, dyad_dset_id, yearmon) %>%
+  mutate(
+    yearmon = yearmon %>% as.character() %>% ym(),
+    troop_lag = lag(troop, order_by = yearmon),
+    police_lag = lag(police, order_by = yearmon),
+    militaryobservers_lag = lag(militaryobservers, order_by = yearmon),
+    total_lag = lag(total, order_by = yearmon)
+  )
+
+# ged_unpko_africa %>% 
+#   select(yearmon, dyad_dset_id, troop, troop_lag) %>% 
+#   View()
+```
+
+
+Finally, let's save the dataset so you can keep working with it in the problem set. 
+
+```{r}
+write_csv(ged_unpko_africa, "data/ged_unpko_africa.csv")
+```
+
+
+## Resources
+
+-   Chapter 6 **Data tidying** in <https://r4ds.hadley.nz/data-tidy>
+-   Chapter 18 **Dates and times** in <https://r4ds.hadley.nz/datetimes.html>
+-   Chapter 15 **Strings** in <https://r4ds.hadley.nz/strings>
+-   Chapter 17 **Factors** in  <https://r4ds.hadley.nz/factors>
