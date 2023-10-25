@@ -1,0 +1,405 @@
+---
+title: "Lab 8: Multiple Linear Regression"
+author: "Viktoriia Semenova"
+editor: source
+date: "October 18, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean_names for datasets
+  "visdat", # visual inspection of datasets
+  "janitor", # clean variable names
+  "modelsummary", # descriptive table
+  "styler", # to style the code
+  "broom",
+  "magrittr", # for more pipes
+  "remotes", # to install packages from GitHub
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# install a package from GitHub (if not installed already)
+if (!"equatiomatic" %in% rownames(installed.packages())) {
+  remotes::install_github("datalorax/equatiomatic")
+}
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+{{< pagebreak >}}
+
+## Dataset
+
+We will be working with data on student evaluations of instructors' beauty and teaching quality for several courses at the University of Texas. The teaching evaluations were conducted at the end of the semester, and the beauty judgments were made later, by six students who had not attended the classes and were not aware of the course evaluations.
+
+|      Variable      | Description                                                                |
+|:------------------:|----------------------------------------------------|
+|       `eval`       | Average course rating: (1) very unsatisfactory - (5) excellent             |
+|      `beauty`      | Composite beauty rating of 6 students', with 1 being lowest and 10 highest |
+|      `female`      | Instructor's a female                                                      |
+|       `age`        | Instructor's age                                                           |
+|     `minority`     | Minority status                                                            |
+|    `nonenglish`    | Instructor's non-English speaking native                                   |
+|      `lower`       | Lower division course (years 1-2)                                          |
+|       `rank`       | Professor's tenure rank (tenured, tenure track, teaching)                  |
+|    `course_id`     | Unique course ID                                                           |
+|     `students`     | Number of students per class                                               |
+|      `formal`      | Outfit of professor in picture: not formal, formal                         |
+|   `blkandwhite`    | color of professor's picture: color, black & white                         |
+| `bty_[student_id]` | Beauty rating of professor from one of 6 students                          |
+|      `tenure`      | Instructor's on tenure track                                               |
+|     `tenured`      | Instructor's on tenure track and already got tenure                        |
+
+> Is this an observational study or an experiment? The original research question posed in the paper is whether beauty leads directly to the differences in course evaluations. Given the study design, is it possible to answer this question as it is phrased? If not, rephrase the question.
+
+```{r}
+evals <- read_csv("data/evals.csv") %>%
+  clean_names()
+glimpse(evals)
+```
+
+```{r}
+# Descriptive stats table for our datasets
+evals %>%
+  rename_with(str_to_title) %>% # capitalize all columns for table
+  select(-Course_id, -Prof) %>% # remove ID variables
+  modelsummary::datasummary_skim(
+    title = "Descriptive Statistics for Course Evaluations Dataset",
+    histogram = FALSE
+  )
+```
+
+
+
+
+## Multiple Linear Regression
+
+
+```{r}
+m_eval6 <- lm(eval ~ beauty + female, data = evals)
+res_eval6 <- tidy(m_eval6)
+```
+
+> What is **missing** in this interpretation?\
+> - A one-unit increase in `beauty` is associated with, on average, `r round(m_eval6$coefficients["beauty"], 3)` increase in teaching evaluation score.
+
+### Visualizing MLR with Continuous and Categorical Predictor
+
+Let's visualize this model. What seems off on this plot?
+
+1.  The regression line does not correspond to the model we estimated (i.e. the line is just the bivariate relationship between y and x)
+2.  Female seems like a continuous variable (which is not the case in this dataset)
+
+```{r}
+ggplot(evals, aes(beauty, eval, color = female)) +
+  geom_jitter(
+    size = 2,
+    alpha = 0.5,
+    width = 0.1
+  ) +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation"
+  ) +
+  geom_smooth(method = "lm", fullrange = TRUE, se = F)
+```
+
+Changing the type of the `female` variable to character or to factor fixed the latter problem, and we have two lines now, one for females and one for males. But according to our model specification, the lines should be parallel, i.e. the effect of beauty is assumed to be the same for both males and females:
+
+```{r}
+evals %>%
+  mutate(female = if_else(female == 1, "Female", "Male")) %>%
+  ggplot(aes(beauty, y = eval, color = female)) +
+  geom_jitter(
+    size = 2,
+    alpha = 0.5,
+    width = 0.1
+  ) +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation",
+    color = "Instructor is"
+  ) +
+  scale_color_viridis_d()
+```
+
+We can manually draw to separate lines with `geom_abline()` like this:
+
+```{r}
+evals %>%
+  mutate(female = if_else(female == 1, "Female", "Male")) %>%
+  ggplot(aes(beauty, y = eval, color = (female))) +
+  geom_jitter(
+    size = 2,
+    alpha = 0.5,
+    width = 0.1
+  ) +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation"
+  ) +
+  geom_abline(
+    intercept = res_eval6$estimate[1],
+    slope = res_eval6$estimate[2],
+    color = viridis::viridis(2)[1] # set matching color manually
+  ) +
+  geom_abline(
+    intercept = res_eval6$estimate[1] + res_eval6$estimate[3],
+    slope = res_eval6$estimate[2],
+    color = viridis::viridis(2)[2] # set matching color manually
+  ) +
+  scale_color_viridis_d() +
+  labs(color = "Instructor is") +
+  theme(legend.position = "top") +
+  scale_x_continuous(limits = c(1, 10), breaks = 1:10) +
+  ylim(c(1, 5.5)) + # why not c(1, 5)?
+  theme(panel.grid.minor = element_blank())
+```
+
+Or we can use `geom_line()` and `predict()` function to plot the parallel lines much quicker. Note that in this case, the regression lines are only plotted for the range of data we have, unlike the `geom_abline()`. The latter does what is called *extrapolation* outside of the range of our data.
+
+```{r}
+evals %>%
+  mutate(female = if_else(female == 1, "Female", "Male")) %>%
+  ggplot(aes(beauty, y = eval, color = (female))) +
+  geom_jitter(
+    size = 2,
+    alpha = 0.5,
+    width = 0.1
+  ) +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation",
+    title = "Relationship between Instructor Beauty and Course Evaluations",
+    color = "Instructor is"
+  ) +
+  geom_line(aes(y = predict(m_eval6))) + # plots the parallel lines
+  scale_color_viridis_d() +
+  theme(legend.position = "top") +
+  scale_x_continuous(limits = c(1, 10), breaks = 1:10) +
+  ylim(c(1, 5.5)) + # why not c(1, 5)?
+  theme(panel.grid.minor = element_blank())
+```
+
+### Models with Multiple Predictors
+
+```{r}
+m_eval7 <- lm(eval ~ beauty + female + age + nonenglish, data = evals)
+tidy(m_eval7)
+```
+
+-   How do we interpret these coefficients?
+
+> For a male English instructor with beauty score of zero and of age zero, the teaching evaluations are expected to be 3.89. This value is meaningless as age of zero is not possible given the assumed DGP.\
+> A one point increase in the beauty score is, on average, associated with a 0.08 increase in course evaluations, holding all else constant.  Course of female instructors are, on average, evaluated 0.21 points lower than courses of male instructors, holding age, beauty, and native language constant.\
+> Having English as their native language is associated with an average increase of 0.33 points in course evaluations, holding all else constant.\
+> On average, every additional 10 years in age of the professor are associated with a 0.02 decrease in course evaluations, holding the beauty, sex, and native language constant.\
+
+Visualizing MLR with a scatterplot can get a little misleading.  
+
+- Problem 1: Each coefficient has its own estimate and standard errors
+- Solution: Plot the coefficients and their errors with a *coefficient plot*
+
+- Problem 2: The results change as you move each variable value 
+- Solution: Plot the *marginal effects* for the coefficients you're interested in
+
+```{r}
+evals_new <- expand_grid(
+  beauty = 1:10,
+  female = 0:1,
+  age = mean(evals$age, na.rm = T),
+  nonenglish = 0,
+  minority = 0
+)
+
+predicted_evals <- augment(m_eval7,
+                           newdata = evals_new)
+
+# how do we fix this plot?
+ggplot(
+  predicted_evals,
+  aes(x = beauty, y = .fitted)
+) +
+  geom_line() +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation"
+  ) +
+  geom_rug(
+    data = evals, aes(y = eval, x = beauty),
+    alpha = 0.3, sides = "b",
+    position = "jitter",
+    length = unit(0.05, "npc")
+  ) +
+  scale_color_viridis_d()
+```
+
+------------------------------------------------------------------------
+
+## Residuals & Diagnostics
+
+Linear regression comes with a number of assumptions, and inspecting residuals allows us to check whether they are met. 
+
+- *Linearity:* There is a linear relationship between the outcome and predictor variables
+- *Independence:* The errors are independent from each other, i.e. knowing the error term for one observation doesn't tell you anything about the error term for another observation
+- *Normality:* The distribution of errors is approximately normal $\varepsilon|X \sim \mathcal{N}(0, \sigma^2)$, i.e. with a zero conditional mean and constant variance of $\sigma^2$ 
+- *Constant variance:* The variability of the errors is equal for all values of the predictor variable, i.e. the errors are _homoscedastic_ (we have constant variance of $\sigma^2$)
+
+A residuals plot is a scatterplot of the regression residuals against the explanatory variable $X$ or the predicted (fitted) values $\hat Y$. Residual plot is a diagnostic plot as it helps us to detect patterns in the residuals. Patterns in residuals signal that systematic influences on $Y $still have not been captured by our model, or that our model misrepresents the data, or that errors do
+not have a constant variance. Ideally, residuals plots should look as if the pattern was generated by pure chance.
+
+Let's have a look at the residuals plot (recall that `augment()` calculates them for us):
+
+```{r}
+augment(m_eval7) %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_jitter(alpha = 0.5) +
+  geom_hline(
+    yintercept = 0,
+    color = "#800010"
+  ) +
+  labs(
+    x = "Beauty Score",
+    y = "Residuals"
+  ) +
+  geom_smooth(se = F) # loess can help identify patterns
+```
+
+Let's consider the linearity assumption:
+
+> Do there seem to be any systematic patterns in residuals? 
+
+Let's think about the constant variance, a.k.a. homoskedasticity, assumption:
+
+> What can we say about variance of residuals across the values of our independent variable, *Beauty Score*? Do we seem to be able to predict evaluations for some values of *Beauty Score* better (i.e. they have smaller residuals) than for others (i.e. the residuals are larger)?
+
+Now about the zero conditional mean assumption:
+
+> Do the residuals, across each value of *Beauty score*, seem to sum up to zero (cancel each other out, are distributed equally above and below the zero line)?
+
+When inspecting the residuals, it is important to identify observations that may be dominating the estimates, and to assess how results change when such dominating data points are dropped. Here is a reminder on the terminology here:
+
+- *Outlier*: An observation with a *large residual*; may indicate a sample peculiarity, a data entry error, or some other problems.
+- *Leverage*: An observation with an extreme value on an *independent* variable is said to have high leverage. Leverage is a measure of how far an independent variable deviates from its mean. These leverage points may have an effect on the estimate of regression
+coefficients and standard errors. Leverage only depends on values of the **predictor** variables
+- *Influence*: An observation is said to be influential if removing the observation substantially changes the estimate of coefficients.
+
+Now let's check the model for these influential points:
+
+> Which observations (if any) seem to have large residuals, i.e. are potential outliers?
+> Which observations seem to be leverage points (if any)? 
+
+There is also another useful quantity to evaluate influence, *Cook’s distance*: it is a measure of influence, which aggregates outlier and leverage properties together. The measure of Cook's distance is based on the difference in predicted (fitted) values with
+and without particular observations. `augment()` calculates it for us:
+
+```{r}
+m_eval7 %>%
+  augment() %>%
+  pull(.cooksd) %>%
+  summary()
+```
+
+
+`augment()` provides us also with other useful quantities:
+  
+  - response and predictor variables in the model
+  - `.fitted`: predicted values
+  - `.se.fit`: standard errors of predicted values
+  - `.resid`: residuals
+  - `.hat`: leverage
+  - `.sigma`: estimate of residual standard deviation when corresponding observation is dropped from model
+  - `.cooksd`: Cook's distance
+  - `.std.resid`: standardized residuals
+
+There are multiple interpretations for this measure, with some researchers recommending to be suspicious of observations with $D_i > 1$ and others doing as far as $\frac{4}{n}$, with $n$ being the sample size. 
+
+```{r}
+m_eval7 %>%
+  augment() %>%
+  filter(.cooksd > 1)
+
+m_eval7 %>%
+  augment() %>%
+  filter(.cooksd > 4 / n())
+
+augment(m_eval7) %>%
+  mutate(large_cd = if_else(.cooksd > 4 / n(), TRUE, FALSE)) %>%
+  ggplot(aes(x = beauty, y = .resid, color = large_cd)) +
+  geom_jitter(alpha = 0.5) +
+  geom_hline(
+    yintercept = 0,
+    color = "#800010"
+  ) +
+  labs(
+    x = "Beauty Score",
+    y = "Residuals",
+    color = "Cook's Distance above 4/n"
+  ) +
+  theme(legend.position = "bottom") +
+  scale_color_viridis_d()
+```
+
+In general, if we have observations with "large" Cook's distance, we either want to re-specify our model to account for outliers (do they have something in common?) or to exclude them  (and acknowledge that) and re-estimate the model to see if the results change.
+
+For the sake of demonstration, however, let's re-estimate the model here, dropping the observations with high Cook's distance:
+
+```{r}
+evals_sample <- m_eval7 %>%
+  augment() %>%
+  filter(.cooksd <= 4 / n())
+
+# re-estimate the model
+m_eval7_sample <- lm(eval ~ beauty + female + age + rank + nonenglish, data = evals_sample) 
+m_eval7_sample %>%
+  summary()
+# original model
+summary(m_eval7)
+
+# does this plot look better? 
+augment(m_eval7_sample) %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_jitter(alpha = 0.5) +
+  geom_hline(
+    yintercept = 0,
+    color = "#800010"
+  ) +
+  labs(
+    x = "Beauty Score",
+    y = "Residuals"
+  ) +
+  geom_smooth(se = F) 
+```
+
+## Resources
+
+-   Bivariate Regression Analysis and Diagnostics in <https://openintro-ims2.netlify.app/07-model-slr>
+-   Multiple Linear Regression Analysis in <https://openintro-ims2.netlify.app/08-model-mlr>
+

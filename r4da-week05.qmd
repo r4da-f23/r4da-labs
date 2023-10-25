@@ -444,8 +444,10 @@ unpko_africa <- unpko_africa %>%
   mutate(
     ccode = countrycode(missioncountry, "country.name", "iso3c"),
     ccode = if_else(missioncountry == "Central African Republic-Chad", "TCD", ccode),
-    ccode = if_else(missioncountry == "Ethiopia-Eritrea", "ETH", ccode)
+    ccode = if_else(missioncountry == "Ethiopia-Eritrea", "ETH", ccode),
+    yearmon = ym(yearmon %>% as.character())
   )
+
 
 unpko_africa %>%
   count(ccode, yearmon) %>% 
@@ -508,8 +510,8 @@ ged_africa <- ged %>%
   mutate(
     ccode = countrycode(country, "country.name", "iso3c"), # no warnings
     yearmon = paste0(
-    year, ".", str_pad(month(date_start), side = "left", pad = "0", width = 2)
-    ) 
+    year, ".", str_pad(month(date_start), side = "left", pad = "0", width = 2)),
+    yearmon = ym(yearmon %>% as.character())
     # %>% as.numeric()
     ) %>%
   dplyr::select(
@@ -527,7 +529,7 @@ Now we can move to aggregating on the dyad-month level:
 
 ```{r}
 ged_africa_agg <- ged_africa %>%
-  group_by(ccode, dyad_dset_id, yearmon) %>%
+  group_by(ccode, dyad_dset_id, conflict_new_id, yearmon) %>%
   summarize(
     country = first(country),
     year = first(year),
@@ -601,6 +603,12 @@ df %>% inner_join(df1) # no Polly & Sam
 > What should be the ordering of datasets? Which parts can we drop right away (if any)? (think about our dependent variable)
 
 ```{r}
+
+unpko_africa_agg <- unpko_africa_agg %>% 
+  mutate(yearmon = ym(yearmon %>% as.character())) 
+
+ged_africa_agg <-ged_africa_agg  %>% 
+  mutate(yearmon = ym(yearmon %>% as.character())) 
 ged_unpko_africa <- ged_africa_agg %>% # generate new dataset 
   left_join(unpko_africa_agg, by = c("yearmon", "ccode", "year")) 
 # how can we fix this error?
@@ -636,7 +644,7 @@ ged_unpko_africa %>%
 
 # creating the lagged versions of variables 
 ged_unpko_africa <- ged_unpko_africa %>%
-  group_by(ccode, dyad_dset_id) %>%
+  group_by(ccode, dyad_dset_id, side_b) %>%
   arrange(ccode, dyad_dset_id, yearmon) %>%
   mutate(
     yearmon = yearmon %>% as.character() %>% ym(),
