@@ -1,0 +1,463 @@
+---
+title: "Lab 10: Uncertainty & Statistical Inference"
+author: "Viktoriia Semenova"
+editor: source
+date: "November 8, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean_names for datasets
+  "visdat", # visual inspection of datasets
+  "janitor", # clean variable names
+  "modelsummary", # descriptive table
+  "styler", # to style the code
+  "broom",
+  "magrittr", # for more pipes
+  "remotes", # to install packages from GitHub
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# install a package from GitHub (if not installed already)
+if (!"equatiomatic" %in% rownames(installed.packages())) {
+  remotes::install_github("datalorax/equatiomatic")
+}
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+{{< pagebreak >}}
+
+## Dataset
+
+We will again be working with data on student evaluations of instructors' beauty and teaching quality for several courses at the University of Texas. The teaching evaluations were conducted at the end of the semester, and the beauty judgments were made later, by six students who had not attended the classes and were not aware of the course evaluations.
+
+|      Variable      | Description                                                                |
+|:------------------:|----------------------------------------------------|
+|       `eval`       | Average course rating: (1) very unsatisfactory - (5) excellent             |
+|      `beauty`      | Composite beauty rating of 6 students', with 1 being lowest and 10 highest |
+|      `female`      | Instructor's a female                                                      |
+|       `age`        | Instructor's age                                                           |
+|     `minority`     | Minority status                                                            |
+|    `nonenglish`    | Instructor's non-English speaking native                                   |
+|      `lower`       | Lower division course (years 1-2)                                          |
+|       `rank`       | Professor's tenure rank (tenured, tenure track, teaching)                  |
+|    `course_id`     | Unique course ID                                                           |
+|     `students`     | Number of students per class                                               |
+|      `formal`      | Outfit of professor in picture: not formal, formal                         |
+|   `blkandwhite`    | color of professor's picture: color, black & white                         |
+| `bty_[student_id]` | Beauty rating of professor from one of 6 students                          |
+|      `tenure`      | Instructor's on tenure track                                               |
+|     `tenured`      | Instructor's on tenure track and already got tenure                        |
+
+
+```{r}
+evals <- read_csv("data/evals.csv") %>%
+  clean_names()
+glimpse(evals)
+```
+
+```{r}
+# Descriptive stats table for our datasets
+evals %>%
+  rename_with(str_to_title) %>% # capitalize all columns for table
+  select(-Course_id, -Prof) %>% # remove ID variables
+  modelsummary::datasummary_skim(
+    title = "Descriptive Statistics for Course Evaluations Dataset",
+    histogram = FALSE
+  )
+```
+
+
+## Coefficient Plots
+### Basic Coefficient Plots by Hand
+
+While it is very common to out the results of multiple models into one table, we can also plot the coefficients and their uncertainty with a so-called coefficient plot. It communicates the point estimates and our uncertainty about them through the confidence intervals. We can include more than model into the plot if we want to:
+
+```{r}
+m1 <- lm(
+  eval ~ beauty + female + age + nonenglish + minority,
+  data = evals
+)
+
+tidy(m1, conf.int = T) %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high)) +
+  geom_pointrange() +
+  geom_vline(xintercept = 0, alpha = 0.5)
+```
+
+We can also put confidence intervals directly into a regression table:
+
+```{r}
+modelsummary::modelsummary(
+  m1,
+  estimate = "{estimate} [{conf.low}, {conf.high}]",
+  conf_level = 0.95,
+  notes = "Notes: Estimate reported with 95% confidence intervals",
+  statistic = NULL
+)
+```
+
+### Multiple Models in Coefficent Plots
+
+For the sake of illustration, let's estimate another model without `minority` as a further control:
+
+```{r}
+m2 <- lm(eval ~ beauty + female + age + nonenglish, data = evals)
+tidy(m2)
+
+tidy(m1, conf.int = T) %>%
+  mutate(m = "Model 1") %>%
+  bind_rows(tidy(m2, conf.int = T) %>%
+              mutate(m = "Model 2")) %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(
+    y = term,
+    x = estimate,
+    xmin = conf.low,
+    xmax = conf.high,
+    shape = m
+  )) +
+  geom_pointrange(
+    position = position_dodge(width = 0.5) # add the space between the estimates
+  ) +
+  geom_vline(xintercept = 0, alpha = 0.5)
+```
+
+### Adding More Details to Coefficient Plots 
+
+We often talk about significant vs. non-significant at X-level coefficients. We can also make it very evident from the plot. Let's add these two things to the plot! 
+- a vertical line at `x = 0`, if the confidence interval for the coefficient includes this value, there is no effect
+- let's color (or transparency) the coefficients and their CIs according to whether their confidence intervals include zero or not (i.e. if the effect is significantly different from zero or not at level X)
+
+```{r}
+tidy(m1, conf.int = T) %>%
+  mutate(significant = if_else(conf.low < 0 & conf.high > 0, "0", "1")) %>%
+  filter(term != "(Intercept)") %>%
+  ggplot(aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high)) +
+  geom_pointrange(aes(alpha = significant)) +
+  geom_vline(xintercept = 0, alpha = 0.5) +
+  scale_alpha_manual(values = c(0.3, 1))
+```
+
+## Confidence Intervals for the Average Predictions 
+
+```{r}
+evals_new <- expand_grid(
+  beauty = 1:10,
+  female = 0,
+  age = mean(evals$age, na.rm = T),
+  nonenglish = 0,
+  minority = 0
+)
+
+predicted_evals <- evals_new %>%
+  bind_cols(predict(m1, newdata = evals_new, interval = "confidence"))
+
+
+# how do we fix this plot?
+ggplot(
+  predicted_evals,
+  aes(x = beauty, y = fit)
+) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.5, color = "black") +
+  labs(
+    x = "Beauty",
+    y = "Average Teaching Evaluation"
+  ) +
+  geom_rug(
+    data = evals, aes(y = eval, x = beauty),
+    alpha = 0.3, sides = "b",
+    position = "jitter",
+    length = unit(0.05, "npc")
+  )
+```
+
+
+## (Lecture Content) Simulation Experiment: Working with Data from the Entire Population
+
+### Population Data 
+
+Let's suppose that we were able to obtain the data from the entire population, and not just the sample of students. Suppose our population of interest is all courses at the university level in the US, and that we have a dataset that contains this information.
+
+```{r}
+load(file = "data/student_population.Rda")
+glimpse(students_population)
+```
+
+Having the data for the entire population, we can estimate true parameter values: 
+
+```{r}
+true_model <-
+  lm(eval ~ beauty + female + age + nonenglish + minority,
+    data = students_population
+  )
+true_est <- tidy(true_model)
+knitr::kable(true_est, digits = 3)
+```
+
+
+Values in this table represent the true effects in the population. If we take random samples from the population and try to estimate these parameter values from the sample, we would like to obtain coefficient values that are close to the numbers in this table. 
+
+### Single Sample Estimates 
+
+Sadly, we never have population data but we only work with samples from it. So let's mimic our real life process by taking a random sample of 500 students, and then run the same model on that sample only and look at the estimates:
+
+```{r}
+s1_est <- slice_sample(students_population, n = 500) %>%
+  lm(eval ~ beauty + female + age + nonenglish + minority, data = .) %>%
+  tidy()
+s1_est
+```
+
+Are these values close to the true values? 
+
+```{r}
+true_est %>%
+  dplyr::select(term, parameter = estimate) %>%
+  left_join(s1_est)
+```
+
+### Sampling Distributions
+
+These coefficients in `estimate` column, the _point estimates_, are just based on one sample. But what if we took many samples instead of just one? Again, this is something we almost never can do in real life, but thanks to `R` we will explore what happens when we take samples repeatedly and what values we obtain in each case. This idea of repeated sampling is the underlying logic of *frequentist* approach to statistics. 
+
+Let's take not 1 but a 1000 more samples. Writing and copy-pasting code for taking each sample and estimating a model on each of them 1000 times will be a little tedious, so we'll make use of a `for`-loop. 
+
+#### Detour: Loop Syntax  
+
+Let's see what a loop does on a few toy examples: 
+
+```{r}
+for (number in 1:5) {
+  print(number)
+}
+
+for (s in seq_len(5)) { # for each object s in sequence of length 5 (1,2,3,4,5)
+  print(s) # print s
+}
+
+for (w in c("One", "Two", "Three")) { # for each object s in vector
+  print(w) # print n
+}
+```
+
+- you can name the placeholder `i` (`n`) whatever you want, but better be descriptive
+- writing `seq_len(5)` is preferable to writing `1:5` due to `seq_len` being more robust 
+- you can write loops within loops, but make sure the placeholders differ!
+
+```{r}
+for (i in seq_len(2)) {
+  for (j in c("One", "Two", "Three")) {
+    paste(
+      "Outer (i) placeholder value is:", i,
+      "Inner (j) placeholder value is:", j
+    ) %>%
+      cat(sep = "\n")
+  }
+}
+```
+
+
+#### Sampling Distributions with a `for`-loop 
+
+So let's move back to our sampling distributions: 
+
+```{r}
+# create an empty object to store our estimates
+estimates <- tibble()
+
+for (s in 1:1000) {
+  estimates <- slice_sample(students_population, n = 1000) %>%
+    lm(eval ~ beauty + female + age + nonenglish + minority, data = .) %>%
+    tidy(conf.int = T) %>%
+    mutate(sample = s) %>% # add the number of sample
+    bind_rows(estimates, .)
+}
+```
+
+Now we have stored all the estimates in the tibble, i.e. we have 6 (number of coefficients in the model) $\times$ 1000 (number of samples taken from population) rows in the `estimates` dataframe. 
+
+Let's have a look at the _sampling distributions_ of these coefficients:
+
+```{r}
+estimates %>%
+  ggplot(aes(x = estimate)) + # plot the point estimates
+  geom_density() +
+  # add true values to the plot
+  geom_vline(
+    data = true_est,
+    aes(xintercept = estimate)
+  ) +
+  facet_wrap(. ~ term, scales = "free") +
+  labs(
+    y = "",
+    title = "Sampling Distributions of Coefficients",
+    subtitle = "Solid Black Lines Indicate True Population Parameters\nRed Lines Indicate Means of Estimated Sampling Distributions"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  # add means of sampling distributions
+  geom_vline(
+    data = estimates %>%
+      group_by(term) %>%
+      summarise(mean = mean(estimate)),
+    aes(xintercept = mean),
+    color = "#80001050",
+    linewidth = 2
+  )
+```
+
+From this plot, we should see a few things:
+
+1. Sampling distributions (of many statistics) are approximately normally distributed (if the sample size is sufficiently large). *Central Limit Theorem* in statistics states exactly that. 
+
+2. These distributions are also centered at the true value of the population coefficient (the value we would get from linear modeling if we did indeed use the full population). This means that on average, using OLS we would get *unbiased* estimates. This corresponds to the concept of *accuracy*, i.e. how close we are to the true value on average. 
+
+3. The spread of the distribution gives us a measure of the precision of our estimate. If the sampling distribution is very wide, then our estimate is imprecise; our estimate would vary widely from sample to sample. If the sampling distribution is very narrow, then our estimate is precise; our estimate would not vary much from sample to sample.
+
+Each point on the curve indicates an estimate that we could potentially obtain from our analysis should we had a slightly different sample. All of these distributions, however, are *hypothetical*. But let's look at the results from a few samples and add them to the plot: 
+
+```{r}
+estimates %>%
+  filter(sample %in% 7:8)
+```
+
+
+```{r}
+estimates %>%
+  ggplot(aes(x = estimate)) +
+  geom_density() +
+  geom_vline(
+    data = true_est,
+    aes(xintercept = estimate)
+  ) +
+  facet_wrap(. ~ term, scales = "free") +
+  labs(
+    y = "",
+    color = "Sample",
+    title = "Sampling Distributions of Coefficients",
+    subtitle = "Solid Lines Indicate True Population Parameters"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  geom_vline(
+    data = estimates %>% filter(sample %in% 7:8),
+    aes(xintercept = estimate, color = as_factor(sample)),
+    linetype = 2
+  ) +
+  scale_color_viridis_d()
+```
+
+
+#### Spread of Sampling Distributions Depends on the Sample Size 
+
+Sampling distributions depend on the size of the samples we have. Running 1000 models might have taken a little while, so if we want to take a truly large number of samples, say 100'000, this would take 100 times longer. I have already pre-created a few of such objects for you so we don't have to run them in class together, and we will load the results directly. We have results from 100'000 sample draws of $n=100$, $n=500$, and $n=1000$. And now we will have a look at the shapes of the sampling distributions we obtain. 
+
+```{r}
+est_100 <- read_rds("output/est_draws10000_n100.rds")
+est_500 <- read_rds("output/est_draws10000_n500.rds")
+
+est_100 <- est_100 %>% mutate(n = "100")
+est_500 <- est_500 %>% mutate(n = "500")
+
+est_500 %>%
+  bind_rows(est_100) %>%
+  ggplot(aes(x = estimate, color = n)) + # plot the point estimates
+  geom_density() +
+  # add true values to the plot
+  geom_vline(
+    data = true_est,
+    aes(xintercept = estimate)
+  ) +
+  facet_wrap(. ~ term, scales = "free") +
+  labs(
+    y = "",
+    title = "Sampling Distributions of Coefficients",
+    subtitle = "Solid Black Lines Indicate True Population Parameters"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  scale_color_viridis_d(alpha = 0.7)
+```
+
+Here we learn that if took samples of larger size, the sampling distribution got more precise, i.e. its variance got smaller. We have more information to estimate the coefficients from, hence our estimates vary less from sample to sample. With wider sampling distributions, we should be less certain that our estimate from a single sample is very close to the true effect. 
+
+
+#### Confidence Intervals 
+
+A related way to communicate the uncertainty is with _confidence intervals_. A single confidence interval is a _range of values_, which may or may not contain the true parameter value (we don't know whether it does or not, unfortunately).  However, the procedure that we use to estimate them gives us some hope:
+
+If we are constructing a 95% confidence interval for our coefficient, this means that if we were to take many samples from population and estimate such a confidence interval, we would expect that 95% of those CIs would cover the true value. Now let's make use of the fact that we have many more samples thna just one and have a look at more of the constructed confidence intervals. 
+
+```{r}
+# add a column of true values to the estimates
+estimates <- true_est %>%
+  rename("true_value" = estimate) %>%
+  dplyr::select(term, true_value) %>%
+  left_join(estimates, .)
+
+estimates %>%
+  mutate(missed = if_else(conf.low > true_value |
+                            conf.high < true_value, "Out", "In")) %>%
+  slice_head(n = length(unique(estimates$term)) * 20) %>%
+  ggplot(aes(
+    y = sample,
+    x = estimate,
+    xmin = conf.low,
+    xmax = conf.high,
+    color = missed
+  )) +
+  geom_pointrange() +
+  facet_wrap(. ~ term, scales = "free") +
+  geom_vline(
+    aes(xintercept = true_value), # add vertical line at true_mean
+  ) +
+  scale_color_manual(values = c("azure4", "darkred")) + # set preferred colors
+  theme_minimal() + # some theme to change the appearance
+  labs(
+    title = "Confidence Intervals Procedure",
+    x = "Coefficient Value",
+    y = "Sample",
+    color = "Is true population parameter inside the 95% CI?"
+  ) +
+  theme(legend.position = "top")
+```
+
+As you see, some of the confidence intervals indeed include the true value, while a few of them do not cover the true value. There is no way for us to tell, however, which sample we obtained. 
