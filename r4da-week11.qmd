@@ -33,7 +33,7 @@ p_needed <- c(
   "broom",
   "magrittr", # for more pipes
   "remotes", # to install packages from GitHub
-  "styler" # to style the code
+  "clarify" # for simulations
 )
 
 # check if they are already installed, install if not installed
@@ -41,11 +41,6 @@ lapply(
   p_needed[!(p_needed %in% rownames(installed.packages()))],
   install.packages
 )
-
-# install a package from GitHub (if not installed already)
-if (!"equatiomatic" %in% rownames(installed.packages())) {
-  remotes::install_github("datalorax/equatiomatic")
-}
 
 # load the packages
 lapply(p_needed, library, character.only = TRUE)
@@ -187,7 +182,7 @@ sims$sim.coefs %>% # extract the coefficients
   theme(plot.title.position = "plot")
 ```
 
-- Why do we have four columns in the simulated coefficient object? 
+- Why do we have three columns in the simulated coefficient object? 
 
 ```{r}
 dim(sims$sim.coefs)
