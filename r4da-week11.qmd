@@ -1,0 +1,442 @@
+---
+title: "Lab 11: Communicating Uncertainty with Simulations"
+author: "Viktoriia Semenova"
+editor: source
+date: "November 8, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+---
+
+```{r setup}
+#| include: false
+# packages needed
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean_names for datasets
+  "visdat", # visual inspection of datasets
+  "janitor", # clean variable names
+  "modelsummary", # descriptive table
+  "styler", # to style the code
+  "broom",
+  "magrittr", # for more pipes
+  "remotes", # to install packages from GitHub
+  "styler" # to style the code
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# install a package from GitHub (if not installed already)
+if (!"equatiomatic" %in% rownames(installed.packages())) {
+  remotes::install_github("datalorax/equatiomatic")
+}
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# same theme for all plots
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+{{< pagebreak >}}
+
+# Dataset
+
+We will again be working with data on student evaluations of instructors' beauty and teaching quality for several courses at the University of Texas. The teaching evaluations were conducted at the end of the semester, and the beauty judgments were made later, by six students who had not attended the classes and were not aware of the course evaluations.
+
+|      Variable      | Description                                                                |
+|:------------------:|----------------------------------------------------|
+|       `eval`       | Average course rating: (1) very unsatisfactory - (5) excellent             |
+|      `beauty`      | Composite beauty rating of 6 students', with 1 being lowest and 10 highest |
+|      `female`      | Instructor's a female                                                      |
+|       `age`        | Instructor's age                                                           |
+|     `minority`     | Minority status                                                            |
+|    `nonenglish`    | Instructor's non-English speaking native                                   |
+|      `lower`       | Lower division course (years 1-2)                                          |
+|       `rank`       | Professor's tenure rank (tenured, tenure track, teaching)                  |
+|    `course_id`     | Unique course ID                                                           |
+|     `students`     | Number of students per class                                               |
+|      `formal`      | Outfit of professor in picture: not formal, formal                         |
+|   `blkandwhite`    | color of professor's picture: color, black & white                         |
+| `bty_[student_id]` | Beauty rating of professor from one of 6 students                          |
+|      `tenure`      | Instructor's on tenure track                                               |
+|     `tenured`      | Instructor's on tenure track and already got tenure                        |
+
+
+```{r}
+evals <- read_csv("data/evals.csv") %>%
+  clean_names()
+glimpse(evals)
+```
+
+```{r}
+# Descriptive stats table for our datasets
+evals %>%
+  rename_with(str_to_title) %>% # capitalize all columns for table
+  select(-Course_id, -Prof) %>% # remove ID variables
+  modelsummary::datasummary_skim(
+    title = "Descriptive Statistics for Course Evaluations Dataset",
+    histogram = FALSE
+  )
+```
+
+
+# Simulations for Regression Interpretation  
+
+This approach to presenting regression results is based on the following paper:
+
+> King, G., M. Tomz, Wittenberg, J. 2000. “Making the most of Statistical Analyses: Improving Interpretation and Presentation”. *American Journal of Political Science*. 44 (2): 347-361. <http://gking.harvard.edu/files/making.pdf>
+
+
+Simulations are a tool that allows you to combine the uncertainty from individual coefficients into uncertainty about the fitted values, i.e. the predictions from our model. Three quantities become important when doing simulations:
+
+- *Predicted values* are simulations that take the estimation uncertainty and the fundamental uncertainty into account. They are in the same metric as the dependent variable.
+- *Expected values* average over the fundamental uncertainty (which zeroes out) and thus only represent the estimation uncertainty. This is similar to the idea of fitted values, where we obtain the expected values of the dependent variable, given a certain combination of the independent variables, just by plugging in the estimated coefficients. 
+- *First differences* are the difference between the sets of expected values. These are used to make conclusions about the size of the effect: 
+
+$$
+\underbrace{FD}_{\text{First Difference}} = \underbrace{E[Y | X_{1}]}_{\text{Expected Value}\\\text{of first scenario}} - \underbrace{E[Y | X_{2}]}_{\text{Expected Value}\\\text{of second scenario}}
+$$
+$$
+\underbrace{FDs}_{\text{First Differences}\\1000\times1} = \underbrace{E[Y | X_{1}]}_{\text{Expected Values}\\\text{of first scenario}\\1000\times1} - \underbrace{E[Y | X_{2}]}_{\text{Expected Values}\\\text{of second scenario}\\1000\times1} = \underbrace{\left[ \begin{array}{c}
+         \tilde{y}^{1,1}\\
+       \tilde{y}^{2,1}\\
+        \dots \\
+       \tilde{y}^{1000,1}\\
+    \end{array} \right]}_{\text{Expected Values}\\\text{Scenario 1 }} -
+\underbrace{\left[ \begin{array}{c}
+         \tilde{y}^{1,2}\\
+       \tilde{y}^{2,2}\\
+        \dots \\
+       \tilde{y}^{1000,2}\\
+    \end{array} \right]}_{\text{Expected Values}\\\text{Scenario 2 }} = \underbrace{\left[ \begin{array}{c}
+         \tilde{y}^{1,1} - \tilde{y}^{1,2}\\
+       \tilde{y}^{2,1} - \tilde{y}^{2,2}\\
+        \dots \\
+       \tilde{y}^{1000,1} - \tilde{y}^{1000,2}\\
+    \end{array} \right]}_{\text{First Differences}}
+$$
+The choice between them is determined by the purpose of your analysis:
+
+- If you want to _predict the future_, e.g. the next election outcome, you would want to include fundamental uncertainty as you are interested in the outcome. Therefore, the predicted value would be appropriate. 
+- If you just want to _illustrate the effect_ of an explanatory variable (e.g., the effect of political knowledge) the expected value would be an appropriate choice, with first differences used to illustrate the effect size.
+
+
+## Simulation of Expected Values in Linear Model 
+
+Our first goal is to get so-called expected values, $E(Y|X)$. Expected values are the average (*expected*) value of a variable $Y$, conditional on a particular set of $X$ values. For example, we could be interested in the expected course evaluation of a female instructor with an average beauty score of $4.4$. In mathematical terms, this would be $E(\text{Evaluation} | \text{Beauty = 4.4}, \text{Female})$.
+
+Let's fit the model and do the prediction by hand: 
+
+```{r}
+m2 <- lm(eval ~ beauty + female, data = evals)
+
+# manual prediction for the scenario
+m2$coefficients[1] + m2$coefficients[2] * 4.4 + m2$coefficients[3]
+```
+
+
+Now we can move to simulating the coefficients. We want to incorporate the uncertainty into our estimates, so we will let `R` take draws (1000 by default) from the normal distribution with the mean of our point estimate and the standard deviation equal to our estimated standard error. In a nutshell, we are assuming that we have a "sampling" distribution, but instead of it being centered at the true parameter value that we do not know, we center it at _our_ estimate. 
+
+```{r}
+# get draws from multivariate normal distribution
+sims <- clarify::sim(m2, n = 1000)
+sims
+```
+We obtain a list with four elements, and we can use dollar sign to select them: 
+
+- `sims$sim.coefs` contains the simulated coefficients 
+- `sims$coefs` contains the original coefs 
+- `sims$vcov` contains information about the uncertainty from the original model 
+- `sims$fit` contains the original model object  
+
+
+
+If we look at `sims$sim.coefs`, we can see how these distributions would look like: 
+
+```{r}
+# plot for each simulated distribution
+sims$sim.coefs %>% # extract the coefficients
+  as_tibble() %>%
+  pivot_longer( # put into long format
+    values_to = "estimate",
+    names_to = "term",
+    cols = everything()
+  ) %>%
+  ggplot(aes(x = estimate)) +
+  geom_histogram(color = "white") +
+  facet_wrap(~term, scales = "free") +
+  labs(title = "Simulated Coefficients") +
+  geom_vline(data = tidy(m2), aes(xintercept = estimate), color = "darkred") +
+  theme(plot.title.position = "plot")
+```
+
+- Why do we have four columns in the simulated coefficient object? 
+
+```{r}
+dim(sims$sim.coefs)
+```
+
+### Expected Values for Scenario with One Value for Variable  
+
+Now, if we want to obtain the predictions for a specific scenario (i.e. combination of values of the independent variables), instead of one single coefficient to multiply the values of $X$ with, we have 1000 sets of coefficients. To work together with all these coefficients at once, we will use `sim_setx()` from `clarify`. This substitutes the `predict()` step from before. 
+
+```{r}
+evs <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario
+    beauty = 4.4,
+    female = 1
+  )
+)
+summary(evs, level = 0.95)
+```
+
+Now we have both the prediction (as before), and the uncertainty about it. Again, we can say that we are 95% certain that the _average course evaluation_ for a female instructor with 4.4 beauty score ranges between 3.82 and 3.97. This confidence interval illustrates our uncertainty about the average value of the dependent variable, the _expected_ value of $Y$, not each individual data point.  
+
+But now let's do something a little more interesting: let's explore if there is a _significant difference_ between male and female instructors at this level of beauty. To do that, we can add a second scenario to `sim_setx()`, where the female variable will be set to 0:
+
+```{r}
+evs <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario 1
+    beauty = 4.4,
+    female = 1
+  ),
+  x1 = list( # scenario 2
+    beauty = 4.4,
+    female = 0
+  )
+)
+
+summary(evs, level = 0.95)
+```
+
+### Predicted Values
+
+Let's also have a look at the predicted values, i.e. incorporate the fundamental uncertainty about our model into the quantities of interest. 
+
+```{r}
+sigma_est <- sigma(m2)
+pvs <- as.matrix(evs) + rnorm(1000, 0, sigma_est)
+
+ggplot(as.data.frame(pvs), aes(x = `1`)) +
+  geom_density() +
+  geom_density(data = as.data.frame(evs), aes(x = `1`), color = "darkred") +
+  labs(
+    x = "Course Evaluation",
+    y = ""
+  ) +
+  theme(axis.text.y = element_blank())
+```
+
+### Scenario with a Range of Values 
+
+Now let's explore the expected average course evaluations for men and women across the full range of the beauty variable: 
+
+```{r}
+evs <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario
+    beauty = 1:10,
+    female = 0:1
+  )
+)
+
+plot(evs) +
+  scale_color_viridis_d(labels = c("Men", "Women")) +
+  scale_fill_viridis_d(labels = c("Men", "Women")) +
+  scale_x_continuous(name = "Beauty Score", breaks = 1:10)
+# scale_y_continuous(limits = c(1,5))
+```
+
+> What can we say about the expected course evaluations from this plot? 
+
+If we are interested in calculating the _differences_, we have to get a little creative with the syntax:
+
+```{r}
+evs_female <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario 1
+    beauty = 1:10, # same range of values
+    female = 1 # effect of interest
+  )
+)
+
+evs_male <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario 1
+    beauty = 1:10, # same range of values
+    female = 0 # effect of interest
+  )
+)
+
+fds <- evs_male - evs_female
+summary(fds)
+plot(fds) +
+  labs(
+    y = "Difference in Course Evaluations",
+    x = "Beauty Score"
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.7)
+```
+
+- Why is this difference seem to be the same for all values of the beauty variable? 
+
+
+
+## Example with an Interaction Effect 
+
+Now let's make the full use of our new powers and try to interpret the results of a model with an interaction effect. 
+
+```{r}
+m3 <- lm(eval ~ beauty * female, data = evals)
+sims <- clarify::sim(m3)
+evs_female <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario 1
+    beauty = 1:10, # same range of values
+    female = 1 # effect of interest
+  )
+)
+
+evs_male <- clarify::sim_setx(
+  sim = sims, # object with simulated coefs
+  x = list( # scenario 1
+    beauty = 1:10, # same range of values
+    female = 0 # effect of interest
+  )
+)
+
+fds <- evs_male - evs_female
+summary(fds)
+```
+
+
+```{r}
+plot(fds, level = 0.95) +
+  labs(
+    y = "Difference in Course Evaluations",
+    x = "Beauty Score"
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.7)
+```
+
+## Practice: Adding Control Variables 
+
+Now let's do some practice:
+
+1. Fit the model with the following specification. What (if anything) can you say about the statistical significance of the difference between the effect of beauty on course evaluations for men and women? 
+
+$$
+\begin{align*}
+\text{Course Evaluation} &= \beta_{0} + \beta_{1}\text{Beauty Score} + \beta_{2}\text{Non-English} + \beta_{3}\text{Age} \\ &+ \beta_{4}\text{Female} + \beta_{5}\text{Minority} \\ &+ \beta_{6}\text{Tenure Track} + \beta_{7}\text{Tenured}  \\ &+\beta_{8}\text{Beauty Score} \times\text{Female} + \epsilon
+\end{align*}
+$$
+
+
+```{r}
+```
+
+
+2. Run the simulations for the model to evaluate if there is still a significant difference in the effect of beauty on course evaluations between men and women. What is your conclusion? 
+
+```{r}
+```
+
+
+
+3. Which scenario did you use? Which quantities of interest did you calculate to answer this question?  
+
+
+
+
+
+
+# Appendix: Simulation by Hand 
+
+This part of the lab outlines the procedure for doing simulation by hand, without the `clarify` package. It illustrates all the steps explicitly. 
+
+Let's do this:
+
+## Step 1 - Get the regression coefficients. {-}
+
+```{r step-1-get-the-regression-coefficients}
+beta_hat <- coef(m2)
+```
+
+## Step 2 - Generate sampling distribution. {-}
+
+### Step 2.1. Get the variance-covariance matrix.  {-}
+
+```{r step-2-1-get-the-variance-covariance-matrix}
+V_hat <- vcov(m2)
+
+# What are the diagonal elements?
+
+sqrt(diag(V_hat))
+```
+
+### Step 2.2. Draw from the multivariate normal distribution. {-}
+
+```{r step-2-2-draw-from-the-multivariate-normal-distribution}
+# We need the MASS package
+
+library(MASS)
+
+# Set the number of draws/simulations.
+
+nsim <- 1000
+
+# Draw from the multivariate normal distribution to get S.
+
+S <- mvrnorm(nsim, beta_hat, V_hat)
+
+dim(S) # Check dimensions
+
+# We now can use S to get both expected and predicted values.
+```
+
+## Step 3 - Choose interesting covariate values. Also known as: Set a scenario. {-}
+
+Tip: double-check the ordering of coefficients first, to put the values in the correct order.
+
+```{r step-3-set-a-scenario}
+names(beta_hat)
+X_men <- c(1, mean(evals$beauty), 0)
+X_women <- c(1, mean(evals$beauty), 1)
+```
+ 
+## Step 4 - Calculate Quantities of Interest {-}
+
+### Expected Values (E(Y|X)) {-}
+
+```{r expected-values}
+EV_men <- S %*% as.matrix(X_men)
+
+# %*% is the operator for matrix multiplication
+
+EV_women <- S %*% as.matrix(X_women)
+
+# Even quicker: we put the scenarios in a matrix.
+
+X <- as.matrix(rbind(X_men, X_women))
+
+EV_combined <- S %*% t(X)
+```
