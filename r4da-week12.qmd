@@ -1,0 +1,669 @@
+---
+title: "Lab 12: Logistic Regression"
+author: "Viktoriia Semenova"
+editor: source
+date: "November 22, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+editor_options: 
+  chunk_output_type: console
+---
+## Setup
+
+```{r setup}
+#| results: 'hide'
+#| message: false
+#| warning: false
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean variable names in datasets
+  "modelsummary", # descriptive & regression tables
+  "haven", # to style the code
+  "broom", # model output
+  "clarify", # for simulations
+  "patchwork" # for plot arragngement
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# set the theme for all plots to theme_bw
+ggplot2::theme_set(ggplot2::theme_classic())
+theme_update(legend.position = "bottom")
+
+UA <- read_csv("data/UA_survey.csv")
+```
+
+Today most of our lab will be based on the following paper:
+
+> Peisakhin, L. and Rozenas, A. 2018. Electoral Effects of Biased Media: Russian Television in Ukraine. *American Journal of Political Science* 62: 535-550. https://doi.org/10.1111/ajps.12355
+
+In brief, the paper addresses the following question: 
+
+> We use plausibly exogenous variation in the availability of the Russian analog television signal in Ukraine to study how a media source with a conspicuous political agenda impacts political behavior and attitudes. Using highly disaggregated election data and an original survey, we estimate that Russian television substantially increased average electoral support for parties and candidates with a “pro-Russian” agenda in the 2014 presidential and parliamentary elections. Evidence suggests that this effect is attributable to persuasion rather than differential mobilization. The effectiveness of biased media varied in a politically consequential way: Its impact was largest on voters with strong pro-Russian priors but was less effective, and to some degree even counter-effective, in persuading those with strong pro-Western priors. Our finding suggests that exposing an already polarized society to a biased media source can result in even deeper polarization.
+
+
+We will simplify the analysis and focus on the following piece of the DGP:
+
+```{dot}
+//| echo: false
+//| fig-width: 3
+digraph D {
+  node [shape=ellipse];
+  edge [len = 1.2, arrowhead = vee];
+  a [label = "Russian TV\nReception"];
+  b [label = "Pro-Russian Vote"];
+  c [label = "Living within\n25 km from Border"];
+  
+  {rank=same a b};
+  {rank=sink c};
+  a->b;
+  c->a;
+  c->b;
+}
+```
+
+
+### Data 
+
+Dataset `UA_survey.csv` contains the following variables:
+
+- `russian_tv`: indicator for whether voter's precinct received Russian TV (1) or not (0)
+- `pro_russian_vote`: indicator for whether respondent voted for pro-Russian party in 2014 Ukrainian elections (1) or not (0)
+- `within_25km`: indicator for whether respondent's precinct is within 25 kilometers from Russian border (1) or not (0)
+
+```{r}
+# summary statistics
+datasummary_skim(UA)
+
+# summary statistics split by DV
+modelsummary::datasummary_balance(1 ~ pro_russian_vote, UA)
+```
+
+
+```{r}
+ggplot(
+  UA,
+  aes(
+    y = pro_russian_vote,
+    fill = if_else(within_25km == 0, "No", "Yes"),
+    color = if_else(within_25km == 0, "No", "Yes"),
+    x = if_else(russian_tv == 0, "No", "Yes")
+  )
+) +
+  geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.3,
+      jitter.height = 0.1
+    ),
+    size = 3, shape = 21
+  ) +
+  labs(
+    y = "Pro-Russian Vote",
+    color = "Living within 25 km",
+    fill = "Living within 25 km",
+    x = "Russian TV Reception"
+  ) +
+  # theme(legend.position = "bottom") +
+  scale_color_viridis_d(end = 0.8, alpha = 0.8) +
+  scale_fill_viridis_d(end = 0.8, alpha = 0.3) +
+  scale_y_continuous(breaks = c(0, 1), labels = c("No", "Yes"))
+```
+
+
+---
+
+## Linear Probability Model 
+
+Sometimes when modeling a binary variable, people just use a linear model. Because the dependent variable is still interpreted as a probability, this is called a _Linear Probability Model_. Can you think of any advantages of using this approach? any drawbacks? 
+
+$$
+\text{Pro-Russian Vote} \sim \beta_0 + \beta_1 \text{Russian TV} + \beta_2 \text{Living within 25km} + \varepsilon
+$$
+
+
+```{r}
+# fitting a linear model with OLS
+m1 <- lm(pro_russian_vote ~ russian_tv + within_25km, data = UA)
+
+# generate predictions
+newdata <- expand_grid(
+  russian_tv = 0:1,
+  within_25km = 0:1
+)
+
+# generate all combinations for variables
+newdata
+
+# look at predictions
+predict(m1, newdata, interval = "c") %>%
+  bind_cols(newdata)
+```
+
+We can also do the same using simulations approach and get our uncertainty right away: 
+
+```{r}
+# calculate the expected values (no first differences!)
+sim_m1 <- sim(m1) # simulate coefficients once per model
+evs <- sim_setx(
+  sim = sim_m1,
+  x = list(
+    russian_tv = 0:1,
+    within_25km = 0:1
+  )
+)
+
+summary(evs)
+# plot(evs) +
+#   theme(legend.position = "bottom") +
+#   scale_color_viridis_d() +
+#   scale_fill_viridis_d() +
+#   labs(x = "Expected Probability of Pro-Russian Vote")
+```
+
+> Do you spot any problems with our predictions?  
+
+```{r}
+fd_within_25km <- sim_setx(
+  sim = sim_m1,
+  x = list(
+    russian_tv = 0,
+    within_25km = 1
+  ),
+  x1 = list(
+    russian_tv = 1,
+    within_25km = 1
+  )
+)
+summary(fd_within_25km)
+
+# fd_outside_25km <- sim_setx(sim = sim_m1,
+#                 x = list(russian_tv = 0,
+#                          within_25km = 0),
+#                   x1 = list(russian_tv = 1,
+#                          within_25km = 0))
+# summary(fd_outside_25km)
+```
+
+> Are the first differences in _expected probabilities of pro-Russian vote_ the same or different between those who _watch Russian TV_ and those who do not? 
+> Do we need both `fd_within_25km` and `fd_outside_25km` objects to evaluate the effect of watching Russian TV or is one of the sufficient? Why? 
+
+
+Here is an example of a plot of expected values for this model. Can you think of any information that is missing on this plot? 
+
+```{r}
+evs_plotting <- evs %>%
+  as.data.frame() %>%
+  pivot_longer(everything()) %>%
+  separate(name, sep = ", ", into = c("russian_tv", "within_25km")) %>%
+  mutate(
+    russian_tv = if_else(str_detect(russian_tv, "0$"), "No", "Yes"),
+    within_25km = if_else(str_detect(within_25km, "0$"), "No", "Yes")
+  ) %>%
+  group_by(russian_tv, within_25km) %>%
+  # group_by(name) %>%
+  summarize(
+    mean = mean(value), # calculate the mean and cis
+    ci_low = quantile(value, 0.025), # lower ci for 95% CIs
+    ci_upper = quantile(value, 0.975) # lower ci for 95% CIs
+  )
+
+evs_plotting %>%
+  ggplot(aes(
+    y = russian_tv,
+    x = mean,
+    xmin = ci_low,
+    xmax = ci_upper,
+    color = within_25km,
+    shape = within_25km
+  )) +
+  geom_pointrange(
+    aes(
+      xmin = ci_low,
+      xmax = ci_upper
+    ),
+    position = position_dodge(width = 0.5) # adds
+  ) +
+  labs(
+    x = "Probability of Pro-Russian Vote",
+    shape = "Living within 25 km",
+    color = "Living within 25 km",
+    y = "Russian TV Reception"
+  ) +
+  scale_color_viridis_d(end = 0.8) +
+  scale_fill_viridis_d(end = 0.8)
+```
+
+## Logistic Regression 
+
+Now let's fit the model that is specifically designed to model binary dependent variables, namely the logistic regression. 
+
+#### Fitting the Model in `R`
+
+Here you can spot the differences in the syntax:
+
+- we are using `glm()` (`g`eneralized `l`inear `m`odel) command instead of `lm()`
+- we are specifying the `family` argument to `binomial`. Both ways will give you a logistic regression:
+  - `family = binomial`
+  - `family = binomial(link = "logit")`
+
+```{r}
+# OLS
+m1 <- lm(pro_russian_vote ~ russian_tv + within_25km, data = UA)
+
+# logistic regression
+m2 <- glm(pro_russian_vote ~ russian_tv + within_25km, data = UA, family = binomial(link = "logit"))
+summary(m2)
+```
+
+#### Interpretation of Coefficients and Mechanics of Logistic Regression
+
+In logistic regression, coefficient interpretation is not as straightforward as in the linear models. The reason for that is the follows: we are no longer modeling the dependent variable as an unbound cintinuous variable. We are applying a transformation that ensures that no matter how larger/small value we obtain when plugging in the values for independent variables and multiplying them with respective coefficients, the predicted probability is always bound between 0 and 1. 
+
+In our example, this means we apply a transformation to the *linear predictor*  $\beta_0 + \beta_1 \text{Russian TV} + \beta_2 \text{Living within 25km}$ to ensure that outcome is bounded between 0 and 1. One of the functions that allows us to achieve this is an _inverse logit_ function. 
+
+The inverse logit (aka logistic or sigmoid) function takes a value between $-\infty$ and $+\infty$ and maps it to a value between 0 and 1:
+
+$$
+logit^{-1}(x) = logistic(x) = \frac{\exp(x)}{1+\exp(x)} = \frac{1}{1+\exp(-x)}
+$$
+
+Let's look at what this transformation does:
+
+```{r}
+# custom function
+inv_logit <- function(x) {
+  exp(x) / (1 + exp(x))
+}
+
+inv_logit_example <- tibble(
+  x = seq(-10, 10, length.out = 50),
+  y = inv_logit(seq(-10, 10, length.out = 50))
+)
+inv_logit_example
+
+ggplot(
+  data = inv_logit_example,
+  aes(x, y)
+) +
+  geom_line(alpha = 0.5)
+```
+
+
+This transformation allows us to still model the _probability_ $\pi = \text{Pr(Pro-Russian Vote} = 1)$ , although not directly. Instead we are modelling the _log odds of $\pi$_. This handy trick comes with a price: the coefficients $\beta$ now represent not changes in _probability_ but changes in the _log odds of $\pi$_ $\log\Big(\frac{\pi}{1-\pi}\Big)$, which is a rather unintuitive quantity. 
+
+
+$$
+\log\Big(\frac{\pi}{1-\pi}\Big) = \underbrace{\beta_0 + \beta_1~X_1 + \cdots + \beta_k~X_k}_{\text{linear predictor}}
+$$
+
+The equivalent of the equation above but with probability on the left-hand side would be:
+
+$$\pi  = \frac{\exp\{\beta_0 + \beta_1~X_1 + \cdots + \beta_k~X_k\}}{1 + \exp\{\beta_0 + \beta_1~X_1 + \cdots + \beta_k~X_k\}}$$
+
+$$
+\pi  = \dfrac{\overbrace{\exp(X\beta)}^{\text{always greater than 0}}}{\underbrace{1 + \exp(X\beta)}_{\text{1 + "always greater than 0"}}} \Rightarrow 0 < \pi < 1
+$$
+
+Knowing these formulas, we will be able to calculate the predicted probabilities from the linear predictor ($X\beta$). 
+
+#### Model Output 
+
+```{r}
+modelsummary(
+  list(
+    "OLS" = m1,
+    "Logit" = m2
+  ),
+  gof_omit = "RMSE|AIC|BIC|F"
+)
+```
+
+If we needed to interpret coefficients for the logit model directly, we could say the following:
+
+> The **log-odds** of voting for a pro-Russian party are expected to be 1.79 more for those exposed to Russian TV compared to those without exposure to Russian TV (the baseline group), holding all else constant.
+
+> The **odds** of voting for a pro-Russian party or those exposed to Russian TV are expected to be 5.98 ($e^{1.79}$) **times** the odds for those without exposure to Russian TV, holding all else constant.
+
+In general, from the regression tables alone we can only refer to the significance and sign of the coefficients, but not their relative sizes.
+
+#### Predicted Probabilities (without uncertainty)    
+
+A much more meaningful way to go about it would be to work with predicted probabilities. Let's calculate them by hand first: 
+
+```{r}
+# by hand
+# russian_tv = 1, within_25km = 1
+pp1 <- m2$coefficients[1] + m2$coefficients[2] * 1 + m2$coefficients[3] * 1
+
+# russian_tv = 0, within_25km = 1
+pp2 <- m2$coefficients[1] + m2$coefficients[2] * 0 + m2$coefficients[3] * 1
+```
+
+> Why are these values negative? 
+
+```{r}
+# custom inverse logit function
+inv_logit <- function(x) {
+  exp(x) / (1 + exp(x))
+}
+
+inv_logit(pp1)
+inv_logit(pp2)
+```
+
+We can also use `predict()` function to obtain these quantities. However, we need to be careful when specifying the argument `type` in this case:
+
+```{r}
+pred_data <- expand_grid(russian_tv = 0:1, within_25km = 0:1)
+
+predict(m2, newdata = pred_data)
+predict(m2, newdata = pred_data, type = "link")
+
+predict(m2, newdata = pred_data, type = "response")
+```
+
+> What is the difference between these functions/arguments? 
+
+---
+
+
+## Simulations for Logit Interpretation  
+
+### Expected Values (aka Predicted Probabilities)
+
+```{r}
+# enure reproducibility in the knitted document
+set.seed(2023)
+
+# simulate coefficients from each model once, and then reuse them
+sim_m2 <- sim(m2)
+evs_logit <- sim_setx(
+  sim = sim_m2,
+  x = list(
+    russian_tv = 0:1,
+    within_25km = 0:1
+  )
+)
+plot(evs_logit)
+summary(evs_logit)
+```
+
+> How would you interpret the results? Do you notice any differences to the linear model?
+
+
+```{r}
+library(patchwork)
+
+# simple combination of plots
+plot(evs_logit) + plot(evs)
+
+# more informative plot
+(plot(evs_logit) + labs(title = "Logit Model")) +
+  (plot(evs) + labs(title = "Linear Model")) +
+  plot_annotation(title = "Distributions of Simulated Predicted Probabilities of Pro-Russian Vote") +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+### First Differences 
+
+Let's have a better look at the first differences to evaluate the effect of the Russian propaganda. That means, we will evaluate the differences between being exposed to Russian TV and not being exposed to it, holding other variables constant:
+
+```{r}
+fd_within_25km <- sim_setx(
+  sim = sim_m2,
+  x = list(
+    russian_tv = 0,
+    within_25km = 1
+  ),
+  x1 = list(
+    russian_tv = 1,
+    within_25km = 1
+  )
+)
+summary(fd_within_25km)
+
+fd_outside_25km <- sim_setx(
+  sim = sim_m2,
+  x = list(
+    russian_tv = 0,
+    within_25km = 0
+  ),
+  x1 = list(
+    russian_tv = 1,
+    within_25km = 0
+  )
+)
+summary(fd_outside_25km)
+```
+
+> How do these first differences compare to the first differences in the linear model? 
+
+> If we needed to present the results of fitting such a model in a paper, which scenario would you choose?  
+
+
+Here is how you can extract the quantities you need and make a different plot for presenting your results:  
+
+```{r}
+pps_tv <- sim_setx(
+  sim = sim_m2, # object with simulated coefs
+  x = list(
+    russian_tv = 1, # scenario with desired (plausible) values
+    within_25km = 0:1
+  )
+)
+
+pps_no_tv <- sim_setx(
+  sim = sim_m2, # object with simulated coefs
+  x = list(
+    russian_tv = 0, # scenario with desired (plausible) values
+    within_25km = 0:1
+  )
+)
+
+fds_tv <- pps_tv - pps_no_tv
+
+## plotting using pointrange geom
+pps_plotting_tv <- summary(pps_tv, ci = TRUE, level = 0.95) %>%
+  as.data.frame() %>%
+  janitor::clean_names() %>%
+  rownames_to_column(var = "within_25km") %>%
+  mutate(tv = "Yes")
+
+pps_plotting_no_tv <- summary(pps_no_tv, ci = TRUE, level = 0.95) %>%
+  as.data.frame() %>%
+  janitor::clean_names() %>%
+  rownames_to_column(var = "within_25km") %>%
+  mutate(tv = "No")
+
+pps_plotting <- pps_plotting_tv %>%
+  bind_rows(pps_plotting_no_tv) %>%
+  mutate(within_25km = if_else(str_detect(within_25km, "within_25km = 0"), "No", "Yes"))
+
+pps_plotting %>%
+  ggplot(aes(
+    x = estimate,
+    xmin = x2_5_percent,
+    xmax = x97_5_percent,
+    y = tv,
+    shape = within_25km,
+    color = within_25km
+  )) +
+  geom_pointrange(
+    position = position_dodge(width = .5),
+    size = 1.2, # change the size of the point (x)
+    linewidth = 1.2 # change the size of the line (xmin-xmax)
+  ) +
+  labs(
+    title = "Russian TV Reception in Precinct and Predicted Probability of Pro-Russian Voting",
+    x = "Probability of Pro-Russian Vote",
+    shape = "Living within 25 km",
+    color = "Living within 25 km",
+    y = "Russian TV Reception\nin Precinct"
+  ) +
+  xlim(0, 1) +
+  scale_color_viridis_d(end = 0.8) +
+  theme(plot.title.position = "plot")
+```
+
+In addition to expected values, we almost always want to present the first differences as well:
+
+```{r}
+fds_tv_plotting <- summary(fds_tv) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "within_25km") %>%
+  clean_names() %>%
+  mutate(
+    within_25km = if_else(str_detect(within_25km, "within_25km = 0"), "No", "Yes")
+  )
+
+fds_tv_plotting %>%
+  ggplot(aes(
+    x = estimate,
+    xmin = x2_5_percent,
+    xmax = x97_5_percent,
+    y = within_25km,
+    # shape = within_25km,
+    # color = within_25km
+  )) +
+  geom_pointrange(
+    position = position_dodge(width = .5),
+    size = 1.2,
+    linewidth = 1.2
+  ) +
+  labs(
+    title = "Effect of Russian TV Reception in Precinct on the Probability of Pro-Russian Vote",
+    subtitle = "First Differences with 95% Confidence Intervals",
+    x = "Difference in Probability of Pro-Russian Vote \nbetween Precincts with and without Russian TV Reception",
+    # shape = "Living within 25 km",
+    # color = "Living within 25 km",
+    y = "Living within 25 km"
+  ) +
+  scale_color_viridis_d(end = 0.8) +
+  theme(plot.title.position = "plot") +
+  geom_vline(xintercept = 0, linetype = "dashed")
+```
+
+
+## Example: Relationship between Mountaneous Terrain and Probability of Civil War Onset
+
+Now we will briefly revisit a highly cited paper by Fearon and Laitin and replicate their analysis. We will be working with the data from the following study:
+
+> Fearon, James D., and David D. Laitin. 2003. “Ethnicity, Insurgency, and Civil War.” *American Political Science Review* 97 (1). Cambridge University Press: 75–90. https://doi:10.1017/S0003055403000534.
+
+The authors summarize their findings in the abstarct as follows:
+
+> An influential conventional wisdom holds that civil wars proliferated rapidly with the end of the Cold War and that the root cause of many or most of these has been ethnic and religious antagonisms. We show that the current prevalence of internal war is mainly the result of a steady accumulation of protracted conflicts since the 1950s and 1960s rather than a sudden change associated with a new, post-Cold War international system. We also find that after controlling for per capita income, more ethnically or religiously diverse countries have been no more likely to experience significant civil violence in this period. We argue for understanding civil war in this period in terms of insurgency or rural guerrilla warfare, a particular form of military practice that can be harnessed to diverse political agendas. **The factors that explain which countries have been at risk for civil war are not their ethnic or religious characteristics but rather the conditions that favor insurgency.** These include poverty—which marks financially and bureaucratically weak states and also favors rebel recruitment—political instability, **rough terrain**, and large populations.
+
+Let's have a look at the dataset:
+
+```{r}
+fearon <- read_dta("data/fearon_rep.dta")
+glimpse(fearon)
+# summary statistics
+datasummary_skim(fearon)
+```
+
+We will be working with `clarify` later, and in order to get plots on the reader-friendly scales of the variable we need to do transformations right inside the formula in the model rather than create separate variables:
+
+```{r}
+fearon <- fearon %>%
+  mutate(
+    mountain = exp(log_mountain),
+    population = exp(log_population)
+  )
+
+m1_fearon <- glm(
+  civilwar ~ priorwar + gdp_lagged + log_population + log(mountain) +
+    noncontiguous + oil + newstate + instability + democracy1 +
+    ethnicfrac + relifrac,
+  data = fearon,
+  family = binomial(link = logit)
+)
+```
+
+
+```{r}
+pps_mountain <- sim_setx(
+  sim = sim(m1_fearon), # object with simulated coefs
+  x = list(
+    mountain = seq(min(fearon$mountain), max(fearon$mountain), length.out = 100)
+  )
+)
+
+plot(pps_mountain) +
+  geom_rug(
+    data = fearon,
+    aes(x = mountain)
+  ) +
+  labs(
+    y = "Probability of Civil War onset",
+    x = "Mountainous Terrain in %"
+  )
+```
+
+Let's see how large is the change in probability of civil war onset when terrain changes from 10% to 90%?
+
+```{r}
+sim_setx(
+  sim = sim(m1_fearon), # object with simulated coefs
+  x = list(
+    mountain = 10
+  ),
+  x1 = list(
+    mountain = 90
+  )
+) %>%
+  summary()
+```
+
+> Does this effect seem substantively large? Would you agree with the conclusions the authors come to? 
+
+We can also have a look at the _average case_ in the dataset: 
+
+```{r}
+median_scenario <- fearon %>%
+  summarise_all(median, na.rm = T)
+
+# use dput() command to easily copypaste the values
+pps_mountain <- sim_setx(
+  sim = sim(m1_fearon),
+  # object with simulated coefs
+  x = list(
+    priorwar = 0,
+    gdp_lagged = 1.99500000476837,
+    log_population = 9.00417709350586,
+    noncontiguous = 0,
+    oil = 0,
+    newstate = 0,
+    instability = 0,
+    democracy1 = -3,
+    ethnicfrac = 0.325454533100128,
+    relifrac = 0.357599973678589,
+    mountain = 11.3000006150937
+  )
+)
+
+
+plot(pps_mountain)
+```
