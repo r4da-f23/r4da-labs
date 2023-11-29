@@ -1,0 +1,496 @@
+---
+title: "Lab 13: Modeling Count Data"
+author: "Viktoriia Semenova"
+editor: source
+date: "November 29, 2023"
+format:
+  html: 
+    theme: slides.scss 
+    code-fold: false
+    code-tools: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+  pdf:
+    toc: true
+    colorlinks: true
+    geometry: 
+      - top=30mm
+      - left=30mm
+highlight-style: github
+editor_options: 
+  chunk_output_type: console
+---
+
+## Setup
+
+```{r setup}
+#| results: 'hide'
+#| message: false
+#| warning: false
+# put all packages we use in a vector
+p_needed <- c(
+  "tidyverse", # shortcut for ggplot2, dplyr, readr
+  "janitor", # clean variable names in datasets
+  "modelsummary", # descriptive & regression tables
+  "haven", # to style the code
+  "broom", # model output
+  "clarify", # for simulations
+  "AER", # for dispersion test in Poisson
+  "MASS" 
+)
+
+# check if they are already installed, install if not installed
+lapply(
+  p_needed[!(p_needed %in% rownames(installed.packages()))],
+  install.packages
+)
+
+# load the packages
+lapply(p_needed, library, character.only = TRUE)
+
+# set the theme for all plots to theme_bw
+ggplot2::theme_set(ggplot2::theme_classic())
+theme_update(legend.position = "bottom")
+```
+
+## Logit Example: Relationship between Mountainous Terrain and Probability of Civil War Onset
+
+Now we will briefly address a highly cited paper by Fearon and Laitin and replicate their analysis. We will be working with the data from the following study:
+
+> Fearon, James D., and David D. Laitin. 2003. "Ethnicity, Insurgency, and Civil War." *American Political Science Review* 97 (1). Cambridge University Press: 75--90. https://doi:10.1017/S0003055403000534.
+
+The authors summarize their findings in the abstract as follows:
+
+> An influential conventional wisdom holds that civil wars proliferated rapidly with the end of the Cold War and that the root cause of many or most of these has been ethnic and religious antagonisms. We show that the current prevalence of internal war is mainly the result of a steady accumulation of protracted conflicts since the 1950s and 1960s rather than a sudden change associated with a new, post-Cold War international system. We also find that after controlling for per capita income, more ethnically or religiously diverse countries have been no more likely to experience significant civil violence in this period. We argue for understanding civil war in this period in terms of insurgency or rural guerrilla warfare, a particular form of military practice that can be harnessed to diverse political agendas. **The factors that explain which countries have been at risk for civil war are not their ethnic or religious characteristics but rather the conditions that favor insurgency.** These include poverty---which marks financially and bureaucratically weak states and also favors rebel recruitment---political instability, **rough terrain**, and large populations.
+
+Let's have a look at the dataset:
+
+```{r}
+fearon <- read_dta("data/fearon_rep.dta")
+glimpse(fearon)
+# summary statistics
+datasummary_skim(fearon)
+```
+
+Here are the models that authors estimated:
+
+![Logit Analyses of Determinants of Civil War Onset, 1945--99 (Fearon & Laitin 2003)](https://static.cambridge.org/binary/version/id/urn:cambridge.org:id:binary-alt:20170407170631-06670-optimisedImage-S0003055403000534tbl001.jpg)
+
+In our replication, we will be working with `clarify` later, and in order to get plots on the reader-friendly scales of the variable we need to do transformations right inside the formula in the model rather than create separate variables:
+
+```{r}
+fearon <- fearon %>%
+  mutate(
+    mountain = exp(log_mountain),
+    population = exp(log_population)
+  )
+
+# fit model 1 from the paper
+m1_fearon <- glm(
+  civilwar ~ priorwar + gdp_lagged + log_population + log(mountain) +
+    noncontiguous + oil + newstate + instability + democracy1 +
+    ethnicfrac + relifrac,
+  data = fearon,
+  family = binomial(link = logit)
+)
+summary(m1_fearon)
+```
+
+To make sense of the results, let's plot the predicted probabilities of civil war onset for the range of all plausible values in the *mountain* variable. We will create a sequence of the length 100 values from the smallest to largest empirically observed value of that variable in the data, holding all else constant. Note that while we had the `log(mountain)` in our dataset, because the transformation was inside the regression formula we need to provide the values on scale of the original variable, not the logged one:
+
+```{r}
+sims_m1 <- sim(m1_fearon, n = 1000)
+pps_mountain <- sim_setx(
+  sim = sims_m1, # object with simulated coefs
+  x = list(
+    mountain = seq(min(fearon$mountain), max(fearon$mountain), length.out = 100)
+  )
+)
+
+plot(pps_mountain) +
+  geom_rug(
+    data = fearon,
+    aes(x = mountain) # add the actual data
+  ) +
+  labs(
+    y = "Probability of Civil War Onset",
+    x = "Mountainous Terrain in %"
+  )
+```
+
+> How large does the effect of mountainous terrain seem to be?
+
+Let's compare two values from this plot and calculate a first difference between them to quantify the size of the effect more precisely. How large is the change in probability of civil war onset when terrain changes from 10% to 90%?
+
+```{r}
+sim_setx(
+  sim = sims_m1, # object with simulated coefs
+  x = list(
+    mountain = 10
+  ),
+  x1 = list(
+    mountain = 90
+  )
+) %>%
+  summary()
+```
+
+> Does this effect seem substantively large? Would you agree with the conclusions the authors come to?
+
+We can also have a look at the *average case* in the dataset:
+
+```{r}
+median_scenario <- fearon %>%
+  summarise_all(median, na.rm = T) %>%
+  dplyr::select(
+    -civilwar,
+    -ethnicwar,
+    -log_mountain,
+    -anocracy,
+    -democracy2,
+    -population
+  )
+
+# use dput() command to easily copypaste the values
+pps_mountain <- sim_setx(
+  sim = sims_m1, # object with simulated coefs
+  x = list(
+    priorwar = 0,
+    gdp_lagged = 1.99500000476837,
+    log_population = 9.00417709350586,
+    noncontiguous = 0,
+    oil = 0,
+    newstate = 0,
+    instability = 0,
+    democracy1 = -3,
+    ethnicfrac = 0.325454533100128,
+    relifrac = 0.357599973678589,
+    mountain = seq(min(fearon$mountain), max(fearon$mountain), length.out = 100)
+  )
+)
+
+plot(pps_mountain) +
+  geom_rug(
+    data = fearon,
+    aes(x = mountain) # add the actual data
+  ) +
+  labs(
+    y = "Probability of Civil War Onset",
+    x = "Mountainous Terrain in %"
+  )
+```
+
+As an example, let's also have a look at how to work with a logged independent variable when doing simulations with `clarify`. For a logged independent variable, we would need to extract the calculated expected values and work with them directly:
+
+```{r}
+# generate the predicted probabilities
+pps_population <- sim_setx(
+  sim = sims_m1, # object with simulated coefs
+  x = list(
+    priorwar = 0,
+    gdp_lagged = 1.995,
+    log_population = seq(min(fearon$log_population, na.rm = T),
+      max(fearon$log_population, na.rm = T),
+      length.out = 100
+    ),
+    noncontiguous = 0,
+    oil = 0,
+    newstate = 0,
+    instability = 0,
+    democracy1 = -3,
+    ethnicfrac = 0.32,
+    relifrac = 0.358,
+    mountain = 11.3
+  )
+)
+
+pps_population %>%
+  summary() %>%
+  as.data.frame() %>%
+  rownames_to_column() %>%
+  clean_names() %>%
+  mutate(log_population = str_extract(rowname, "\\d.+") %>% as.numeric()) %>%
+  ggplot() +
+  geom_ribbon(aes(
+    x = exp(log_population),
+    y = estimate,
+    ymin = x2_5_percent,
+    ymax = x97_5_percent
+  ), alpha = 0.5) +
+  geom_line(aes(
+    x = exp(log_population),
+    y = estimate
+  )) +
+  geom_rug(
+    data = fearon,
+    aes(x = population), # add the actual data
+    alpha = 0.3
+  ) +
+  labs(
+    y = "Probability of Civil War Onset",
+    x = "Population"
+  )
+
+plot(pps_population) +
+  geom_rug(
+    data = fearon,
+    aes(x = log_population), # add the actual data
+    alpha = 0.3
+  ) +
+  labs(
+    y = "Probability of Civil War Onset",
+    x = "Population (log)"
+  )
+```
+
+## Generalized Linear Models Overview
+
+Logistic regression was an example of a *generalized* linear model. But there are many more of them, tailored for different kinds of dependent variables. We have already discussed the binary dependent variable and will talk more about the count one in today. As you can see from the table below, these models differ by their stochastic components and link functions. Both of these pieces of information depict the differences in the steps we follow when generating quantities of interest. In particular, we need to select the appropriate response function when transforming the linear predictor `XBeta` when working with the expected values and, when generating predicted values, to draw from the appropriate stochastic component.
+
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+| Model             | Stochastic Component              | Systematic Component: | Systematic Component:               | Inverse Link Function                               |
+|                   |                                   |                       |                                     |                                                     |
+|                   |                                   | Linear Predictor      | Link Function                       | (Response function)                                 |
++===================+===================================+=======================+=====================================+=====================================================+
+| Linear            | $$                                | $$                    | $$                                  | $$                                                  |
+|                   | Y \sim \mathcal{N(\mu_i, \sigma)} | \mu_i = X_i\beta      | \mu_i                               | \mu_i                                               |
+|                   | $$                                | $$                    | $$                                  | $$                                                  |
+|                   |                                   |                       |                                     |                                                     |
+|                   | `rnorm()`                         |                       |                                     |                                                     |
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+| Logit             | $$                                | $$                    | $$                                  | $$                                                  |
+|                   | Y \sim Bernoulli (\pi_i)          | \mu_i = X_i\beta      | \mu_i = \log\frac{\pi_i}{1 - \pi_i} | \pi_i = \dfrac{{\exp(\mu_i)}^{}}{{1 + \exp(\mu_i)}} |
+|                   | $$                                | $$                    | $$                                  | $$                                                  |
+|                   |                                   |                       |                                     |                                                     |
+|                   | `rbinom(size = 1)`                |                       |                                     | `plogis()`                                          |
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+| Probit            | $$                                | $$\mu_i = X_i\beta    | $$                                  | $$                                                  |
+|                   | Y \sim Bernoulli (\pi_i)          | $$                    | \mu_i = \Phi^{-1}({\pi_i})          | \pi_i = \Phi({\mu_i})                               |
+|                   | $$                                |                       | $$                                  | $$                                                  |
+|                   |                                   |                       |                                     |                                                     |
+|                   | `rbinom(size = 1)`                |                       |                                     | `pnorm()`                                           |
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+| Poisson           | $$                                | $$                    | $$                                  | $$                                                  |
+|                   | Y \sim Pois (\lambda_i)           | \mu_i = X_i\beta      | \mu_i= \log{\lambda_i}              | \lambda_i = e^{\mu_i}                               |
+|                   | $$                                | $$                    | $$                                  | $$                                                  |
+|                   |                                   |                       |                                     |                                                     |
+|                   | `rpois()`                         |                       |                                     | `exp()`                                             |
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+| Negative Binomial | $$                                | $$                    | $$                                  | $$                                                  |
+|                   | Y \sim NegBin(\lambda_i, \theta)  | \mu_i = X_i\beta      | \mu_i= \log{\lambda_i}              | \lambda_i = e^{\mu_i}                               |
+|                   | $$                                | $$                    | $$                                  | $$                                                  |
+|                   |                                   |                       |                                     |                                                     |
+|                   | `rnbinom()`                       |                       |                                     | `exp()`                                             |
++-------------------+-----------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------+
+
+: Note: $\Phi(.)$ is the cumulative distribution function of the standard normal distribution.
+
+## Models for Count Data
+
+When our dependent variable only takes discrete positive values, linear regression may not be the best approach to model it. Among generalized linear models, there are a few that would fit the data generation process better. Most often, researches use a Negative binomial and Poisson models.
+
+For some more context, here are some examples of count variables:
+
+-   number of parliamentary questions asked by a legislator
+-   number of executive orders a president issues in a week
+-   number of protests in a country/region/city per month
+-   length of a document (e.g., bill or judicial decision) in words
+-   number of terrorist attacks per month
+-   number of party switchers
+-   deaths by horsekick in the Prussian army (example from *Das Gesetz der kleinen Zahlen* book written in 1898 by Bortkiewicz)
+
+### Poisson Model
+
+One of the most straightforward models used for count dependent variables is Poisson. Poisson regression allows us to model positive discrete variables, such as the number of times an event has occurred during an interval of time. When using this model, we will assume that our dependent variable can be modeled with Poisson distribution. Unlike a normal distribution, which had two parameters - the center (mean $\mu$) and the spread (variance $\sigma$), this distribution is only defined by one parameter $\lambda$, which defines both the center and the spread of the values. Let's see what we are talking about exactly:
+
+```{r}
+n_draws <- 1000
+lambda <- c(5, 15, 30, 50)
+
+poisson_example <- tibble()
+for (l in lambda) {
+  poisson_example <- tibble(value = rpois(n_draws, l), lambda = l) %>%
+    bind_rows(poisson_example, .)
+}
+
+poisson_example %>%
+  mutate(lambda = as.factor(lambda)) %>%
+  ggplot(aes(color = lambda)) +
+  geom_density(
+    aes(
+      fill = lambda,
+      x = value
+    ),
+    alpha = 0.5,
+    show.legend = F
+  ) +
+  scale_fill_viridis_d() +
+  scale_color_viridis_d() +
+  geom_vline(xintercept = c(5, 15, 30, 50), linetype = "dashed", alpha = 0.5)
+```
+
+In this plot, the mass of the distribution shifts with the changes in the mean: for instance, we assume that if the average number of fatalities is 50, the data is much more spread than when the average number of fatalities is 30. In fact, we assume that variance is equal to 50 and 30 respectively. This is a strong assumption to make. However, the general idea makes sense: the smaller the mean, the less variance there should be. Think about the variation in wages of a regular person and a billionaire: the billionaire may lose or earn a few millions, but the variation in income of a regular person would be in hundreds or thousands at most. The larger the mean income, the larger the possibility for variation. The relationship between the mean and variance in this context is called **dispersion**.
+
+When modelling count data with Poisson distribution, we write $Y \sim Pois (\lambda)$. How does this distribution relate to our modelling approach? We will again start with a linear predictor $X\beta$, where $X$ represents our independent variable(s) and $\beta$ their respective coefficients and the intercept and apply a transformation so it becomes on the scale of $\lambda$, i.e. can only take positive values:
+
+$$
+\lambda = \exp(X\beta) \Rightarrow \lambda \geq 0
+$$
+
+Here is how we can illustrate this:
+
+```{r}
+exp(2)
+rpois(n = 100, lambda = exp(2)) %>% var()
+rpois(n = 100, lambda = exp(2)) %>% mean()
+```
+
+However most often, we will need to use a model that relaxes the assumption about equal mean and variance and allows for a better fit to data. This model is a *Negative Binomial* model. When fitting this model, we estimate an additional parameter $\theta$ that allows for the variance to be larger than mean if that fits data better. In technical terms, we can say that Negative Binomial model accounts for **overdispersion** in the data. Overdispersion occurs when there is greater variability in the data than expected given the distribution we assumed. This will be a problem because the standard errors will be too small (we will be finding effects where there is nothing). We will fit both models and verify if the more flexible version fits the data better.
+
+We will base on the paper _One-Sided Violence Against Civilians in War: Insights from New Fatality Data_ by Kristine Eck and Lisa Hultman. Here is the abstarct:
+
+> This article presents new data on the direct and deliberate killings of civilians, called one-sided violence, in intrastate armed conflicts, 1989—2004. These data contribute to the present state of quantitative research on violence against civilians in three important respects: the data provide actual estimates of civilians killed, the data are collected annually and the data are provided for both governments and rebel groups. Using these data, general trends and patterns are presented, showing that the post-Cold War era is characterized by periods of fairly low-scale violence punctuated by occasional sharp increases in violence against civilians. Furthermore, rebels tend to be more violent on the whole, while governments commit relatively little violence except in those few years which see mass killings. The article then examines some factors that have been found to predict genocide and evaluates how they correlate with one-sided violence as conceptualized here. A U-shaped correlation between regime type and one-sided violence is identified: while autocratic governments undertake higher levels of one-sided violence than other regime types, rebels are more violent in democratic countries.
+
+And the resulst we will try to replicate:
+
+![](images/Eck_Hultman_table_iv.png)
+
+```{r}
+eck <- read_dta("data/eck_rep.dta") %>%
+  mutate(os_best = if_else(os_best == 500000, NA, os_best))
+
+# Poisson model
+m1 <- glm(
+  os_best ~ intensity_dyad + auto + demo + govt + prior_os,
+  data = eck,
+  family = "poisson"
+)
+summary(m1)
+```
+
+Let's first evaluate if we indeed have overdispersion in our data:
+
+```{r}
+AER::dispersiontest(object = m1)
+```
+
+This test allows us to see if the dispersion parameter is indeed equal to one. In this case, the dispersion parameter very clearly is not equal to 1. The dispersion is 1642.229, which, according to the dispersion test, is significantly different from 1. This means that the model does not fit the data, and the dependent variable has more variation than the Poisson model can handle, so we probably need to choose a different technique.
+
+### Negative Binomial Regression
+
+Let's fit the other model and see if it works better:
+
+```{r}
+# Negative Binomial model using MASS package
+m2 <- glm.nb(
+  os_best ~ intensity_dyad + auto + demo + govt + prior_os,
+  data = eck,
+  control = glm.control(maxit = 100)
+)
+summary(m2)
+```
+
+There are multiple ways to see which model is better. In this case, we have a model that is *nested*, i.e. we could get from one specification to another by setting a certain parameter to zero (i.e. not estimating it). For instance, if you add another control variable or add an interaction (but have the same data!), you are dealing with nested models. There is a test for such models that allows us to determine which one of them fits data better.
+
+### Model Selection
+
+#### Likelihood Ratio test for Nested Models
+
+The likelihood ratio test is a test to compare two models, one of which is a special case of the other (Restricted and Unrestricted Model).
+
+Technically, this is what we are doing in this test: Let $\mathcal{L_R}$ be the likelihood for the null, *restricted* model with $r$ parameters and $\mathcal{L_R}$ be the likelihood for the alternative, *unrestricted* model with $u$ parameters, $u>r$. One can show that when $u \to \infty$, $-2 \log\left(\dfrac{\mathcal{L_R}}{\mathcal{L_U}}\right)$ converges to the $\chi^2$ distribution with $k = u - r$ degrees of freedom. Thus, $LR = -2 \cdot \log(\mathcal{\hat L_r}) + 2 \cdot \log(\mathcal{\hat L_u}) = 2(\log \mathcal{\hat L_u} - \log \mathcal{\hat L_r})$.
+
+Intuitively, we are comparing likelihoods given two possible values for a parameter estimates. If one set of value is far more likely than the other, the likelihood ratio is going to be large, which means that one quantity is far more likely that the other, and thus the full model fits data better.
+
+One could think of Poisson and Negative Binomial Models as approximately nested, and the LR test is often applied to decide between the Poisson and Negative Binomial specifications.
+
+```{r lrt-1}
+L1 <- logLik(m1) # Log Likelihood of model 1 (poisson)
+L2 <- logLik(m2) # Log Likelihood of model 2 (negbin)
+
+LRT <- -2 * L1 + 2 * L2 # converges to chi^2 distribution
+# LRT <- 2 * (L2 - L1)
+
+# compare to the critical value
+LRT > qchisq(0.95, df = 1) # why df = 1?
+```
+
+Here is the implementation with `lmtest` package:
+
+```{r}
+lmtest::lrtest(m1, m2)
+```
+
+We can conclude that negative Binomial model fits the data better, which is also in line with the results of the dispersion test from before.
+
+#### Model Selection Based on Information Criteria
+
+We have already discussed the Likelihood ratio test, which is a way to compare nested models. There are also alternatives here, which you can see reported in `modelsummary` output and also in `summary()` output.
+
+The *Akaike Information Criterion*, or *AIC* for short, is a method for scoring and selecting a model. It bases on the likelihood and the complexity of the model, i.e. the number of estimated parameters $k$.
+
+$$AIC = 2k - 2log(\hat{\mathcal L})$$
+
+To use AIC for model selection, we simply choose the model giving smallest AIC over the set of models considered.
+
+```{r AIC-1}
+# Poisson model
+L1 <- as.numeric(logLik(m1)) # Log Likelihood of model 1
+L2 <- as.numeric(logLik(m2)) # Log Likelihood of model 2
+2 * length(m1$coefficients) - 2 * L1
+AIC(m1) # built-in version
+
+# Negative Binomial Model
+2 * (length(m1$coefficients) + 1) - 2 * L2
+AIC(m2) # built-in version
+```
+
+Yet another option is *Bayesian Information Criterion* or *BIC*. As with AIC, the model with the lowest BIC is selected. Unlike the AIC, the BIC penalizes the model more for its complexity, meaning that more complex models will have a worse (larger) score and will, in turn, be less likely to be selected.
+
+### Substantive Interpretation with Simulations
+
+As with logistic regression, because there is a transformation of the linear predictor involved, the interpretation of coefficients is not straightforward and intuitive. Hence, we will again refer to simulation approach for calculating our expected values an uncertainty about them and evaluating the substantive sizes of effects.
+
+```{r}
+# simulate the coefficients
+sims_m2 <- sim(m2, n = 1000)
+
+# generate expected values
+pps <- sim_setx(
+  sim = sims_m2, # object with simulated coefs
+  x = list(
+    auto = 1:0,
+    demo = 1:0,
+    intensity_dyad = 1.238431,
+    govt = 0,
+    prior_os = 48.13062
+  )
+)
+
+plot(pps)
+```
+
+> Are all of these quantitites meaningful?
+
+## Practice: Models with Interactions
+
+1.  Estimate the model with an interaction between the regime types and the prior one-sided killings.
+
+```{r}
+```
+
+2.  Using simulations, plot the effect of prior one-sided killings for different regime types for a typical case in the data.
+
+```{r}
+```
+
+3.  Calculate the first differences to show whether there is a significant difference between the effect of prior one-sided killings **across** regime types.
+
+```{r}
+```
+
+4.  Suppose you needed to test the hypothesis about the effect of prior one-sided killings being conditional on regime types. In particular:
+
+> The effect of prior one-sided killings on one-sided killings is larger in autocracies than in democracies or anocracies.
+
+Do the first differences we just estimated allow us to make conclusions about this hypothesis? Why (not)?
